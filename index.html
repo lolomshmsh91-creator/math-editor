@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>محرر المعادلات العربي</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e6658">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="محرر المعادلات">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  /* layout: header → settings strip → palette (tabs) → white paper work surface → export row → saved equations */
+  --ink:#1b2230;
+  --muted:#5b6474;
+  --bg:#edf0f3;
+  --panel:#ffffff;
+  --line:#d3d9e1;
+  --accent:#0e6658;
+  --accent-ink:#ffffff;
+  --accent-soft:#dcefea;
+  --f-display:"Aref Ruqaa","Amiri",serif;
+  --f-ui:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#e6eaf0; --muted:#9aa4b3; --bg:#141a21; --panel:#1d252e; --line:#2f3a46;
+    --accent:#3fb39d; --accent-ink:#0b1915; --accent-soft:#1f3a35; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#e6eaf0; --muted:#9aa4b3; --bg:#141a21; --panel:#1d252e; --line:#2f3a46;
+  --accent:#3fb39d; --accent-ink:#0b1915; --accent-soft:#1f3a35; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 40px;display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-weight:700;font-size:38px;line-height:1.1;margin:0;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.author{display:flex;align-items:baseline;gap:10px;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:8px 18px}
+.author span{font-size:14px}
+.author strong{font-family:var(--f-display);font-size:26px;font-weight:700;line-height:1.2}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding:10px 12px}
+.grp{display:flex;align-items:center;gap:8px}
+.grp > .lbl{font-size:13px;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--ink);font:inherit;font-size:14px;padding:5px 11px;cursor:pointer}
+.seg button + button{border-inline-start:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-size:14px;padding:6px 12px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+select,input[type=range]{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px 6px}
+.spacer{flex:1}
+.wordbar{border-color:var(--accent);background:var(--accent-soft)}
+.wordbar strong{font-family:var(--f-display);font-size:22px}
+
+.tabs{display:flex;gap:2px;padding:8px 10px 0;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:500;padding:7px 14px;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.pal{display:flex;flex-wrap:wrap;gap:6px;padding:10px}
+.key{min-width:44px;height:44px;padding:0 8px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-family:Amiri,"Noto Sans Math",serif;font-size:22px;line-height:1}
+.key:hover{border-color:var(--accent);background:var(--accent-soft)}
+.key svg{display:block;height:32px;width:auto;max-width:76px}
+.key.wide{font-size:19px}
+.pal.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;max-height:330px;overflow:auto}
+.key.fcard{height:auto;min-height:92px;flex-direction:column;gap:6px;padding:8px 8px 6px;align-items:stretch;justify-content:space-between}
+.fcard .fprev{display:flex;justify-content:center;align-items:center;flex:1;min-height:48px}
+.fcard .fprev svg{max-width:100%;height:auto}
+.fcard .fname{font-family:var(--f-ui);font-size:13px;color:var(--muted);text-align:center;line-height:1.3}
+.sep{width:1px;align-self:stretch;background:var(--line);margin:0 4px}
+
+.stage{position:relative}
+.paper{background:#fff;color:#111;border:1px solid var(--line);border-radius:10px;min-height:260px;padding:18px;overflow:auto;cursor:text;display:flex;justify-content:flex-start;align-items:flex-start;box-shadow:0 1px 0 rgba(0,0,0,.03)}
+.paper.focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.paper svg{display:block;flex:none;margin:0 auto}
+.paper .ph{fill:#eef6f4;stroke:#0e6658;stroke-width:1.1;stroke-dasharray:3 2.5}
+.paper .act{fill:#0e66580f;stroke:#0e665833;stroke-width:1}
+.paper .selr{fill:#2f7de14d;stroke:none}
+.caret{stroke:#0e6658;stroke-width:2.2;animation:blink 1.05s steps(1) infinite}
+.paper:not(.focus) .caret{opacity:.35;animation:none}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.caret{animation:none}}
+.main{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;min-width:0}
+.menubar{display:flex;flex-wrap:wrap;gap:2px;padding:4px 6px;position:relative}
+.mb{border:0;background:transparent;color:var(--ink);font:inherit;font-size:15px;font-weight:500;padding:6px 14px;border-radius:6px;cursor:pointer}
+.mb:hover,.mb[aria-expanded="true"]{background:var(--accent-soft);color:var(--accent)}
+.menu-pop{position:absolute;z-index:30;min-width:220px;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 28px rgba(0,0,0,.18);padding:4px;display:grid}
+.mi{border:0;background:transparent;color:var(--ink);font:inherit;font-size:14px;text-align:start;padding:8px 12px;border-radius:5px;cursor:pointer}
+.mi:hover{background:var(--accent-soft)}
+.menu-pop hr{border:0;border-top:1px solid var(--line);margin:4px 2px;width:auto}
+.ws{position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;flex-direction:column;gap:8px;padding:12px;overflow:hidden}
+.ws-title{font-family:var(--f-display);font-size:26px}
+.ws-body{flex:1;min-height:0;display:grid;grid-template-columns:minmax(300px,430px) minmax(0,1fr);gap:12px}
+.ws-form{overflow:auto;display:grid;gap:10px;align-content:start;padding-inline-end:2px}
+.ws-prev{overflow:auto;display:grid;gap:14px;justify-items:center;align-content:start;padding:4px 4px 20px}
+.ws-prev canvas{width:min(100%,794px);height:auto;background:#fff;box-shadow:0 1px 8px rgba(0,0,0,.28)}
+.ws-card{padding:10px;display:grid;gap:8px}
+.ws-card h3{margin:0;font-family:var(--f-display);font-size:21px}
+.ws-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.ws-checks{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px}
+.ws-item-h,.ws-item-b,.ws-add{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ws-item textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%;resize:vertical;min-height:54px}
+.ws-att{background:#fff;color:#111;border:1px solid var(--line);border-radius:6px;padding:4px;display:flex;justify-content:center;overflow:hidden}
+.ws-att svg{max-width:100%;height:auto;max-height:110px}
+.ws-lines{font-size:13px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+.ws-lines input{width:64px;font:inherit;font-size:15px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.btn.sm{font-size:13px;padding:3px 9px}
+.ws-item.sub{margin-inline-start:22px}
+@media (max-width:760px){ .ws{overflow:auto} .ws-body{display:flex;flex-direction:column;flex:none} .ws-form,.ws-prev{overflow:visible} .ws-grid{grid-template-columns:1fr} }
+.dlg-back{position:fixed;inset:0;z-index:50;background:rgba(15,22,30,.45);display:flex;align-items:center;justify-content:center;padding:14px}
+.dlg{width:min(560px,100%);max-height:100%;overflow:auto;padding:16px;display:grid;gap:12px}
+.dlg h2{font-family:var(--f-display);font-size:26px;margin:0}
+.dlg-prev{background:#fff;color:#111;border:1px solid var(--line);border-radius:8px;min-height:90px;max-height:260px;overflow:auto;display:flex;justify-content:center;align-items:center;padding:6px}
+.dlg-prev svg{max-width:100%;height:auto;flex:none}
+.dlg-body{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.fld{display:grid;gap:3px;font-size:13px;color:var(--muted);min-width:0}
+.fld.wide{grid-column:1/-1}
+.fld input,.fld select{font:inherit;font-size:16px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+.fld input.num{text-align:center}
+.dlg-row{display:flex;gap:8px;justify-content:flex-start;flex-direction:row-reverse}
+.keypad{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:8px}
+.keypad button{height:46px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:Amiri,"Noto Sans Math",serif;font-size:22px;line-height:1;cursor:pointer;padding:0;touch-action:manipulation}
+.keypad button.fn{font-family:var(--f-ui);font-size:14px;background:var(--accent-soft)}
+.keypad button.w3{grid-column:span 3}
+.keypad button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.keypad button:active{border-color:var(--accent)}
+.paper{touch-action:pan-y}
+#kbd{font-size:16px;position:absolute;top:0;inset-inline-start:0;width:1px;height:1px;opacity:0;border:0;padding:0;resize:none;overflow:hidden}
+.mode{position:absolute;top:10px;inset-inline-end:12px;font-size:12px;color:#0e6658;background:#dcefea;border-radius:20px;padding:2px 10px;pointer-events:none}
+.status{min-height:22px;font-size:13px;color:var(--muted);padding:0 4px}
+.status.ok{color:var(--accent)}
+
+.cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+@media (max-width:860px){.cols{grid-template-columns:1fr}}
+.side{padding:12px;display:grid;gap:10px}
+.side h2{font-family:var(--f-display);font-size:24px;margin:0;font-weight:700}
+.saved{display:grid;gap:8px;max-height:420px;overflow:auto}
+.card{border:1px solid var(--line);border-radius:8px;padding:6px;display:grid;gap:6px;background:#fff}
+.card .th{display:flex;justify-content:center;min-height:40px;color:#111}
+.card .th svg{max-width:100%;height:auto;max-height:70px}
+.card .row{display:flex;gap:6px;justify-content:flex-end}
+.card .btn{font-size:13px;padding:3px 10px;background:#fff;color:#1b2230}
+.empty{color:var(--muted);font-size:14px}
+.help{padding:12px 14px}
+.help h2{font-family:var(--f-display);font-size:24px;margin:0 0 6px;font-weight:700}
+.help ul{margin:0;padding-inline-start:18px;display:grid;gap:3px;font-size:14px;columns:2;column-gap:28px}
+@media (max-width:640px){.help ul{columns:1}}
+.credit{text-align:center;color:var(--muted);padding:8px 0 0;display:grid;gap:6px;justify-items:center}
+.credit .who{font-family:var(--f-display);font-size:24px;color:var(--ink)}
+.credit .school{font-size:16px;font-weight:600}
+.credit .sup{display:grid;gap:4px;justify-items:center;margin-top:4px}
+.credit .sup-h{font-size:14px}
+.credit ul{list-style:none;margin:0;padding:0;display:grid;gap:2px;font-size:14px}
+.credit li{display:grid;grid-template-columns:auto auto;gap:10px;justify-content:center}
+.credit li span:first-child{font-weight:600;color:var(--ink)}
+.credit li span + span::before{content:"— "}
+kbd{font-family:inherit;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:13px;background:var(--panel)}
+@media (max-width:700px){
+  .wrap{padding:10px 10px 28px;gap:10px}
+  .wrap,.cols,.main{display:flex;flex-direction:column}
+  .cols,.main{display:contents}
+  .wrap>*,.cols>*,.main>*{flex:0 0 auto;min-width:0}
+  h1{font-size:26px}
+  header{order:0;align-items:center}
+  header p{display:none}
+  .author{padding:4px 12px}
+  .author strong{font-size:19px}
+  #menubar{order:1}
+  #wordBar{order:1}
+  .mb{padding:6px 10px}
+  .stage{order:2}
+  .keypad{order:3}
+  #palPanel{order:4}
+  #exportBar{order:5}
+  .status{order:6}
+  #settingsBar{order:7}
+  .side{order:8}
+  .help{order:9}
+  .credit{order:10}
+  .paper{min-height:150px;padding:10px}
+  .pal{max-height:170px;overflow:auto}
+  .pal.cards{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));max-height:240px}
+  .spacer{display:none}
+}
+@media (pointer:coarse){.help{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>محرر المعادلات العربي</h1>
+      <p>اكتب المعادلات بالترميز العربي من اليمين لليسار، ثم انسخها صورةً أو نزّلها لتضعها في Word.</p>
+    </div>
+    <div class="author"><span>إعداد</span><strong>أ. محمد حسن المتولي</strong></div>
+  </header>
+
+  <nav class="panel menubar" id="menubar" aria-label="القوائم"></nav>
+
+  <div class="panel bar" id="settingsBar" role="toolbar" aria-label="إعدادات الكتابة">
+    <div class="grp"><span class="lbl">الاتجاه</span>
+      <div class="seg" id="segDir">
+        <button type="button" id="dirRtl" data-v="rtl">عربي ←</button>
+        <button type="button" id="dirLtr" data-v="ltr">لاتيني →</button>
+      </div>
+    </div>
+    <div class="grp"><span class="lbl">الأرقام</span>
+      <div class="seg" id="segNum">
+        <button type="button" id="numAr" data-v="ar">١٢٣</button>
+        <button type="button" id="numEn" data-v="en">123</button>
+      </div>
+    </div>
+    <div class="grp"><span class="lbl">محاذاة الأسطر</span>
+      <div class="seg" id="segAlign">
+        <button type="button" id="alR" data-v="right">يمين</button>
+        <button type="button" id="alC" data-v="center">وسط</button>
+        <button type="button" id="alL" data-v="left">يسار</button>
+      </div>
+    </div>
+    <div class="grp"><span class="lbl">ترقيم الأسطر</span>
+      <div class="seg" id="segLnum">
+        <button type="button" id="lnNone" data-v="none">بدون</button>
+        <button type="button" id="lnNum" data-v="num">(١) (٢)</button>
+        <button type="button" id="lnAbj" data-v="abj">(أ) (ب)</button>
+      </div>
+    </div>
+    <button type="button" class="btn" id="btnText" aria-pressed="false" title="اكتب كلمات عادية متصلة الحروف داخل المعادلة">وضع النص</button>
+    <div class="grp"><label class="lbl" for="zoom">التكبير</label><input type="range" id="zoom" min="0.6" max="1.8" step="0.1" value="1"></div>
+    <span class="spacer"></span>
+    <button type="button" class="btn" id="btnUndo" title="تراجع (Ctrl+Z)">↶ تراجع</button>
+    <button type="button" class="btn" id="btnRedo" title="إعادة (Ctrl+Y)">↷ إعادة</button>
+    <button type="button" class="btn" id="btnClear">مسح الكل</button>
+  </div>
+
+  <div class="panel" id="palPanel">
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="pal" id="pal" role="tabpanel"></div>
+  </div>
+
+  <div class="cols">
+    <div class="main">
+      <div class="panel bar wordbar" id="wordBar" hidden>
+        <strong id="wordTitle">معادلة جديدة لـ Word</strong>
+        <span class="lbl">اكتب المعادلة ثم اضغط الزر لإرسالها إلى المستند.</span>
+        <span class="spacer"></span>
+        <button type="button" class="btn" id="btnWordCancel">إلغاء</button>
+        <button type="button" class="btn primary" id="btnWordOk">إدراج في Word</button>
+      </div>
+      <div class="stage">
+        <div class="paper" id="paper" aria-label="مساحة كتابة المعادلة"><div id="canvas" style="margin:0 auto"></div></div>
+        <span class="mode" id="modeTag" hidden>وضع النص</span>
+        <textarea id="kbd" aria-label="إدخال المعادلة" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+      </div>
+      <div class="panel keypad" id="keypad" hidden></div>
+      <div class="panel bar" id="exportBar" aria-label="التصدير">
+        <button type="button" class="btn primary" id="btnCopy" title="ينسخ الجزء المحدد، أو المعادلة كلها إن لم تحدد شيئًا (Ctrl+C)">نسخ كصورة</button>
+        <button type="button" class="btn" id="btnShare" hidden>مشاركة الصورة</button>
+        <button type="button" class="btn" id="btnDl" hidden>تنزيل PNG</button>
+        <div class="grp"><label class="lbl" for="pt">حجمها في Word</label>
+          <select id="pt"><option value="12">١٢ نقطة</option><option value="14">١٤ نقطة</option><option value="16" selected>١٦ نقطة</option><option value="18">١٨ نقطة</option><option value="20">٢٠ نقطة</option><option value="24">٢٤ نقطة</option><option value="32">٣٢ نقطة</option></select>
+        </div>
+        <div class="grp"><span class="lbl">الخلفية</span>
+          <div class="seg" id="segBg">
+            <button type="button" id="bgW" data-v="white">بيضاء</button>
+            <button type="button" id="bgT" data-v="none">شفافة</button>
+          </div>
+        </div>
+        <span class="spacer"></span>
+        <button type="button" class="btn" id="btnLink" title="رابط يفتح هذه المعادلة في المحرر، تضعه على الصورة في Word">نسخ رابط التعديل</button>
+        <label class="btn" for="fileOpen" title="افتح صورة معادلة نزّلتها من هنا لتعدّلها">فتح صورة معادلة</label>
+        <input type="file" id="fileOpen" accept="image/png" hidden>
+        <button type="button" class="btn" id="btnSave">حفظ في معادلاتي</button>
+        <button type="button" class="btn" id="btnWs" title="صفحات A4 بترويسة وأسئلة، تُصدَّر PDF أو Word">ورقة العمل</button>
+      </div>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+    </div>
+    <aside class="panel side">
+      <h2>معادلاتي</h2>
+      <div class="saved" id="saved"></div>
+    </aside>
+  </div>
+
+  <section class="panel help">
+    <h2>اختصارات لوحة المفاتيح</h2>
+    <ul>
+      <li><kbd>/</kbd> كسر جديد</li>
+      <li><kbd>^</kbd> أُس، و <kbd>_</kbd> دليل سفلي</li>
+      <li><kbd>(</kbd> <kbd>[</kbd> <kbd>{</kbd> <kbd>|</kbd> أقواس تتمدد مع المحتوى</li>
+      <li><kbd>*</kbd> ضرب ×، و <kbd>-</kbd> طرح −</li>
+      <li>الأسهم للتنقل بين الخانات، و <kbd>Tab</kbd> للخانة التالية</li>
+      <li><kbd>Enter</kbd> سطر جديد لخطوات الحل</li>
+      <li><kbd>Backspace</kbd> يدخل القالب ثم يحذفه إذا كان فارغًا</li>
+      <li><kbd>Ctrl</kbd>+<kbd>Z</kbd> تراجع، <kbd>Ctrl</kbd>+<kbd>Y</kbd> إعادة</li>
+      <li>اكتب <kbd>ج</kbd> ثم <kbd>ـ</kbd> (Shift+J) لتحصل على جـ</li>
+      <li>الصورة المنزّلة تدخل Word بالحجم الذي اخترته وبدقة عالية</li>
+      <li>في Word: <kbd>Ctrl</kbd>+نقرة على صورة المعادلة تفتحها هنا للتعديل</li>
+      <li>حدّد جزءًا بالسحب بالفأرة، أو <kbd>Shift</kbd>+الأسهم، أو <kbd>Ctrl</kbd>+<kbd>A</kbd> للكل</li>
+      <li><kbd>Ctrl</kbd>+<kbd>C</kbd> ينسخ المحدد صورةً إلى Word، و <kbd>Ctrl</kbd>+<kbd>X</kbd> يقصّه</li>
+      <li><kbd>Ctrl</kbd>+<kbd>V</kbd> يلصق معادلة منسوخة من المحرر لتعدّلها</li>
+      <li>حدّد جزءًا ثم اضغط قالبًا (كسر، جذر، أقواس) ليدخل المحدد داخله</li>
+      <li>كل صورة تُصدَّر من هنا تحمل معادلتها؛ اسحبها إلى الورقة البيضاء لتعدّلها</li>
+    </ul>
+  </section>
+</div>
+
+<div class="ws" id="ws" hidden>
+  <div class="panel bar ws-top">
+    <strong class="ws-title">ورقة العمل</strong>
+    <span class="spacer"></span>
+    <button type="button" class="btn primary" id="wsPdf">تنزيل PDF</button>
+    <button type="button" class="btn" id="wsDocx">تنزيل Word</button>
+    <button type="button" class="btn" id="wsReset">ورقة جديدة</button>
+    <button type="button" class="btn" id="wsClose">رجوع إلى المحرر</button>
+  </div>
+  <div class="status" id="wsStatus" role="status" aria-live="polite"></div>
+  <div class="ws-body">
+    <div class="ws-form" id="wsForm"></div>
+    <div class="ws-prev" id="wsPrev" aria-label="معاينة الصفحات"></div>
+  </div>
+</div>
+
+<div class="dlg-back" id="dlgBack" hidden>
+  <form class="panel dlg" id="dlg" novalidate>
+    <h2 id="dlgTitle"></h2>
+    <div class="dlg-prev" id="dlgPrev"></div>
+    <div class="dlg-body" id="dlgBody"></div>
+    <div class="dlg-row"><button type="button" class="btn" id="dlgCancel">إلغاء</button><button type="submit" class="btn primary" id="dlgOk">إدراج</button></div>
+  </form>
+</div>
+
+<script>
+(function(){
+'use strict';
+const MF = 'Amiri, "Noto Sans Math", "Cambria Math", "Times New Roman", serif';
+const MF_SVG = "Amiri, 'Noto Sans Math', 'Cambria Math', 'Times New Roman', serif";
+const S0 = 44;
+const OPS = '+−×÷±∓=≠≈≡<>≤≥∝→←⇒⇐⇔∈∉⊂⊃⊆⊇∪∩∴∵∥⊥≅∼:∋';
+const PUNC = ',;';
+const SWAP = {'<':'>','>':'<','≤':'≥','≥':'≤','→':'←','←':'→','⇒':'⇐','⇐':'⇒','∈':'∋','∋':'∈','∉':'∌','⊂':'⊃','⊃':'⊂','⊆':'⊇','⊇':'⊆',',':'،',';':'؛','?':'؟'};
+const FLIP = new Set(['∑','∫','∮','∠','∡','∛','∜']);
+const AR_DIG = '٠١٢٣٤٥٦٧٨٩';
+
+const state = {dir:'rtl', nums:'ar', align:'right', lnum:'none', textMode:false, zoom:1, bg:'white'};
+const stNow=()=>({dir:state.dir,nums:state.nums,align:state.align,lnum:state.lnum});
+let doc, cur, undoS=[], redoS=[], lastL=null, focused=false, sel=null;
+
+/* ---------------- model ---------------- */
+const R = (...items)=>({items});
+function kindOf(v){
+  if(/^[0-9.]$/.test(v)) return 'num';
+  if(OPS.includes(v)) return 'op';
+  if(PUNC.includes(v)) return 'punc';
+  if(v===' ') return 'sp';
+  if(/[ء-يٱ-ۓA-Za-zΑ-ω]/.test(v)) return 'var';
+  return 'sym';
+}
+const C = (v,k)=>({t:'ch',v,k:k||kindOf(v)});
+const N = {
+  frac:()=>({t:'frac',c:[R(),R()]}),
+  sqrt:()=>({t:'sqrt',c:[R()]}),
+  root:()=>({t:'root',c:[R(),R()]}),
+  sup:()=>({t:'sup',c:[R()]}),
+  sub:()=>({t:'sub',c:[R()]}),
+  ssup:()=>({t:'ssup',c:[R(),R()]}),
+  par:(o,cl=true,inner)=>({t:'par',o,cl,c:[inner||R()]}),
+  mat:(r,cols,align='c')=>({t:'mat',r,cols,align,c:Array.from({length:r*cols},()=>R())}),
+  big:(v)=>({t:'big',v,c:[R(),R()]}),
+  lim:(v)=>({t:'lim',v,c:[R()]}),
+  fn:(v)=>({t:'fn',v}),
+  acc:(v)=>({t:'acc',v,c:[R()]}),
+  ldiv:()=>({t:'ldiv',c:[R(),R(),R()]})   // c[0] dividend, c[1] divisor, c[2] quotient
+};
+function chars(str){ return Array.from(str).map(ch=>C(ch)); }
+
+function link(){ doc.lines.forEach((r,li)=>{ r._p=null; r._ci=0; r._line=li; walk(r); }); }
+function walk(r){ r.items.forEach(n=>{ n._pr=r; if(n.c) n.c.forEach((ch,ci)=>{ ch._p=n; ch._ci=ci; ch._line=-1; walk(ch); }); }); }
+const idxOf = n=>n._pr.items.indexOf(n);
+const ser = d=>JSON.stringify(d,(k,v)=>k[0]==='_'?undefined:v);
+function emptyDeep(r){ return r.items.every(it=>it.c && it.c.every(emptyDeep)); }
+const nodeEmpty = n=>n.c.every(emptyDeep);
+
+function pathOf(){
+  const steps=[]; let r=cur.row;
+  while(r._p){ const n=r._p; steps.unshift([idxOf(n), r._ci]); r=n._pr; }
+  return {line:r._line, steps, i:cur.i};
+}
+function fromPath(p){
+  let r=doc.lines[Math.min(p.line,doc.lines.length-1)];
+  try{ for(const [k,ci] of p.steps) r=r.items[k].c[ci]; }catch(e){ r=doc.lines[0]; }
+  cur={row:r, i:Math.min(p.i, r.items.length)};
+}
+
+/* ---------------- history & persistence ---------------- */
+function snapshot(){ undoS.push({j:ser(doc), p:pathOf()}); if(undoS.length>200) undoS.shift(); redoS=[]; }
+function restore(s){ doc=JSON.parse(s.j); link(); fromPath(s.p); }
+function undo(){ if(!undoS.length) return; sel=null; redoS.push({j:ser(doc),p:pathOf()}); restore(undoS.pop()); render(); }
+function redo(){ if(!redoS.length) return; sel=null; undoS.push({j:ser(doc),p:pathOf()}); restore(redoS.pop()); render(); }
+function store(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function load(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+
+/* ---------------- measuring ---------------- */
+const mctx = document.createElement('canvas').getContext('2d');
+const mcache = new Map();
+const fontOf = (s,it)=>(it?'italic ':'')+s.toFixed(2)+'px '+MF;
+function measure(str,s,it){
+  const key=str+'|'+s.toFixed(2)+'|'+(it?1:0);
+  let m=mcache.get(key); if(m) return m;
+  mctx.font=fontOf(s,it); mctx.direction='ltr';
+  const t=mctx.measureText(str);
+  m={w:t.width, a:(t.actualBoundingBoxAscent!=null?t.actualBoundingBoxAscent:0.7*s), d:(t.actualBoundingBoxDescent!=null?t.actualBoundingBoxDescent:0.2*s)};
+  mcache.set(key,m); return m;
+}
+function disp(v,k){
+  let s=v;
+  if(k==='num' && state.nums==='ar') s=s.replace(/[0-9]/g,d=>AR_DIG[d]).replace('.',',');
+  if(state.dir==='rtl' && k!=='num' && SWAP[s]) s=SWAP[s];
+  return s;
+}
+function textPrim(str,x,y,s,it,flip){ const m=measure(str,s,it); return {t:'text',str,x,y,s,it:!!it,flip:!!flip,w:m.w}; }
+
+/* ---------------- layout ---------------- */
+function mirror(b){
+  const W=b.w, mx=x=>W-x;
+  b.prims.forEach(p=>{
+    if(p.t==='text'||p.t==='ph') p.x=W-p.x-p.w;
+    else if(p.t==='line'){ p.x1=mx(p.x1); p.x2=mx(p.x2); }
+    else if(p.t==='path') p.cmds=p.cmds.map(c=>c.map((v,j)=>(j>0&&j%2===1)?mx(v):v));
+  });
+  b.kids.forEach(k=>{ k.dx=W-k.dx-k.b.w; });
+  return b;
+}
+
+function layRow(row,cx){
+  const s=cx.s, rtl=cx.dir==='rtl', it=row.items;
+  if(!it.length){
+    const w=0.56*s;
+    return {w,a:0.62*s,d:0.14*s,prims:[{t:'ph',x:0.07*s,y:-0.6*s,w:0.42*s,h:0.7*s}],kids:[],row,carets:[w/2],s};
+  }
+  const segs=[]; let k=0;
+  while(k<it.length){
+    const n=it[k];
+    if(n.t==='ch' && n.k==='txt'){
+      let e=k; while(e+1<it.length && it[e+1].t==='ch' && it[e+1].k==='txt') e++;
+      segs.push(txtSeg(it,k,e,cx)); k=e+1; continue;
+    }
+    if(rtl && n.t==='ch' && n.k==='num'){
+      let e=k; while(e+1<it.length && it[e+1].t==='ch' && it[e+1].k==='num') e++;
+      if(e>k){ segs.push(numSeg(it,k,e,cx)); k=e+1; continue; }
+    }
+    const prevB = segs.length ? segs[segs.length-1].last : null;
+    const b=layItem(n,cx,prevB,k>0?it[k-1]:null);
+    segs.push({s:k,e:k,b,offs:rtl?[b.w,0]:[0,b.w],last:b}); k++;
+  }
+  let W=0, A=0.55*s, D=0.15*s;
+  segs.forEach(g=>{ W+=g.b.w; A=Math.max(A,g.b.a); D=Math.max(D,g.b.d); });
+  const box={w:W,a:A,d:D,prims:[],kids:[],row,carets:new Array(it.length+1).fill(0),s};
+  let pos=0;
+  segs.forEach(g=>{
+    const x=rtl?W-pos-g.b.w:pos;
+    box.kids.push({b:g.b,dx:x,dy:0});
+    for(let j=0;j<=g.e-g.s+1;j++) box.carets[g.s+j]=x+g.offs[j];
+    pos+=g.b.w;
+  });
+  return box;
+}
+function numSeg(it,s0,e,cx){
+  const b={w:0,a:0,d:0,prims:[],kids:[]}; const starts=[]; let x=0;
+  for(let j=s0;j<=e;j++){ const kb=layItem(it[j],cx,null,null); starts.push(x); b.kids.push({b:kb,dx:x,dy:0}); x+=kb.w; b.a=Math.max(b.a,kb.a); b.d=Math.max(b.d,kb.d); }
+  b.w=x; const n=e-s0+1; const offs=[x]; for(let j=1;j<n;j++) offs.push(starts[j]); offs.push(0);
+  return {s:s0,e,b,offs,last:b.kids[b.kids.length-1].b};
+}
+function txtSeg(it,s0,e,cx){
+  const s=cx.s; const parts=[]; for(let j=s0;j<=e;j++) parts.push(it[j].v);
+  const conv=t=>state.nums==='ar'?t.replace(/[0-9]/g,d=>AR_DIG[d]):t;
+  const str=conv(parts.join('')); const m=measure(str,s,false); const pad=0.06*s;
+  const isAr=/[؀-ۿ]/.test((str.match(/[A-Za-z؀-ۿ]/)||[''])[0]);
+  const offs=[]; for(let j=0;j<=parts.length;j++){ const pw=measure(conv(parts.slice(0,j).join('')),s,false).w; offs.push(pad+(isAr?m.w-pw:pw)); }
+  if(cx.dir==='rtl'){ offs[0]=m.w+2*pad; offs[parts.length]=0; } else { offs[0]=0; offs[parts.length]=m.w+2*pad; }
+  const b={w:m.w+2*pad,a:Math.max(m.a,0.55*s),d:Math.max(m.d,0.12*s),prims:[textPrim(str,pad,0,s,false)],kids:[]};
+  return {s:s0,e,b,offs,last:b};
+}
+
+function layItem(n,cx,prev,prevItem){
+  const s=cx.s, rtl=cx.dir==='rtl';
+  switch(n.t){
+  case 'box': { const w=0.62*s; return {w,a:0.62*s,d:0.1*s,prims:[{t:'ph',x:0.08*s,y:-0.62*s,w:0.46*s,h:0.68*s}],kids:[]}; }
+  case 'ch': {
+    if(n.k==='sp') return {w:0.32*s,a:0.5*s,d:0.1*s,prims:[],kids:[]};
+    const str=disp(n.v,n.k);
+    const it=n.k==='var' && /^[A-Za-z]$/.test(n.v);
+    const flip=rtl && FLIP.has(n.v);
+    const m=measure(str,s,it);
+    let lp=0, rp=it?0.07*s:0.01*s;
+    if(n.k==='var' && /^[\u0621-\u064A]/.test(n.v)){ lp=0.03*s; rp=0.03*s; }
+    if(n.k==='op'){
+      const unary=('−+±∓'.includes(n.v)) && (!prevItem || (prevItem.t==='ch' && (prevItem.k==='op'||prevItem.k==='punc')) || (prevItem.t==='fn'));
+      const sp=unary?0.03*s:(cx.depth>0?0.15*s:0.22*s); lp=rp=sp;
+    }
+    if(n.k==='punc') rp=0.24*s;
+    const p=textPrim(str,rtl?rp:lp,0,s,it,flip);
+    return {w:lp+m.w+rp,a:Math.max(m.a,0.45*s),d:Math.max(m.d,0),prims:[p],kids:[]};
+  }
+  case 'fn': {
+    const m=measure(n.v,s,false), p=0.1*s;
+    return {w:m.w+2*p,a:Math.max(m.a,0.5*s),d:m.d,prims:[textPrim(n.v,p,0,s,false)],kids:[]};
+  }
+  case 'frac': {
+    const cs=cx.depth>0?Math.max(cx.s*0.82,13):cx.s; const c2={s:cs,dir:cx.dir,depth:cx.depth+1};
+    const nb=layRow(n.c[0],c2), db=layRow(n.c[1],c2);
+    const pad=0.1*s, ax=0.28*s, t=Math.max(1.3,0.05*s), g=0.12*s, o=0.05*s;
+    const W=Math.max(nb.w,db.w)+2*pad;
+    const ny=-ax-t/2-g-nb.d, dy=-ax+t/2+g+db.a;
+    return {w:W+2*o,a:-ny+nb.a,d:dy+db.d,prims:[{t:'line',x1:o,y1:-ax,x2:o+W,y2:-ax,sw:t}],
+      kids:[{b:nb,dx:o+(W-nb.w)/2,dy:ny},{b:db,dx:o+(W-db.w)/2,dy}]};
+  }
+  case 'fig': return layFig(n,cx);
+  case 'sqrt': return radical(n,cx,false);
+  case 'ldiv': return longDiv(n,cx);
+  case 'root': return radical(n,cx,true);
+  case 'sup': case 'sub': case 'ssup': {
+    const ss=Math.max(s*0.68,11), c2={s:ss,dir:cx.dir,depth:cx.depth+1};
+    const pa=prev?prev.a:0.65*s, pd=prev?prev.d:0.1*s;
+    const kids=[]; let a=0.3*s, d=0, w=0;
+    if(n.t!=='sub'){ const sb=layRow(n.c[0],c2); const u=Math.max(0.4*s,pa-0.26*s); kids.push({b:sb,dx:0.03*s,dy:-u}); a=Math.max(a,u+sb.a); d=Math.max(d,sb.d-u); w=Math.max(w,sb.w); }
+    if(n.t!=='sup'){ const sb=layRow(n.c[n.t==='ssup'?1:0],c2); let v=Math.max(0.24*s,pd+0.04*s); if(n.t==='ssup') v=Math.max(v,0.34*s); kids.push({b:sb,dx:0.03*s,dy:v}); a=Math.max(a,sb.a-v); d=Math.max(d,v+sb.d); w=Math.max(w,sb.w); }
+    const b={w:w+0.09*s,a,d,prims:[],kids};
+    return rtl?mirror(b):b;
+  }
+  case 'par': {
+    const body=layRow(n.c[0],cx); const ax=0.28*s;
+    const up=Math.max(body.a,0.62*s)+0.07*s, dn=Math.max(body.d,0.2*s)+0.07*s;
+    const half=Math.max(up-ax,dn+ax); const top=-ax-half, bot=-ax+half, h=bot-top;
+    const bw=(n.o==='{'?0.3:n.o==='|'?0.16:0.24)*s+0.035*h, gap=0.05*s;
+    const prims=bracket(n.o,0.02*s,top,bot,bw,s,false);
+    let x=0.02*s+bw+gap; const kids=[{b:body,dx:x,dy:0}]; x+=body.w+gap;
+    if(n.cl){ prims.push(...bracket(n.o,x,top,bot,bw,s,true)); x+=bw; }
+    const b={w:x+0.04*s,a:-top,d:bot,prims,kids};
+    return rtl?mirror(b):b;
+  }
+  case 'big': {
+    const isInt=(n.v==='∫'||n.v==='∮'); const gs=isInt?1.7*s:1.4*s; const m=measure(n.v,gs,false);
+    const ax=0.28*s; const by=-ax+(m.a-m.d)/2; const gt=by-m.a, gb=by+m.d;
+    const c2={s:Math.max(s*0.62,10),dir:cx.dir,depth:cx.depth+1};
+    const lo=layRow(n.c[0],c2), hi=layRow(n.c[1],c2);
+    let b;
+    if(!isInt){
+      const w=Math.max(m.w,lo.w,hi.w)+0.14*s; const gx=(w-m.w)/2;
+      const hy=gt-0.1*s-hi.d, ly=gb+0.1*s+lo.a;
+      b={w,a:-hy+hi.a,d:ly+lo.d,prims:[textPrim(n.v,gx,by,gs,false,rtl)],kids:[{b:lo,dx:(w-lo.w)/2,dy:ly},{b:hi,dx:(w-hi.w)/2,dy:hy}]};
+    } else {
+      const gx=0.03*s; const hx=gx+m.w*0.82, lx=gx+m.w*0.42;
+      const hy=gt+hi.a*0.9, ly=gb-0.02*s;
+      const w=Math.max(gx+m.w,hx+hi.w,lx+lo.w)+0.14*s;
+      b={w,a:Math.max(-gt,-hy+hi.a),d:Math.max(gb,ly+lo.d),prims:[textPrim(n.v,gx,by,gs,false,rtl)],kids:[{b:lo,dx:lx,dy:ly},{b:hi,dx:hx,dy:hy}]};
+    }
+    return rtl?mirror(b):b;
+  }
+  case 'lim': {
+    const m=measure(n.v,s,false); const sb=layRow(n.c[0],{s:Math.max(s*0.64,10),dir:cx.dir,depth:cx.depth+1});
+    const w=Math.max(m.w,sb.w)+0.26*s; const ly=Math.max(m.d,0.08*s)+0.1*s+sb.a;
+    return {w,a:Math.max(m.a,0.6*s),d:ly+sb.d,prims:[textPrim(n.v,(w-m.w)/2,0,s,false)],kids:[{b:sb,dx:(w-sb.w)/2,dy:ly}]};
+  }
+  case 'mat': {
+    const c2={s:cx.s,dir:cx.dir,depth:cx.depth}; const bs=n.c.map(r=>layRow(r,c2)); const Rn=n.r, Cn=n.cols;
+    const colW=Array(Cn).fill(0), rA=Array(Rn).fill(0.62*s), rD=Array(Rn).fill(0.2*s);
+    bs.forEach((b,i)=>{ const r=Math.floor(i/Cn), c=i%Cn; colW[c]=Math.max(colW[c],b.w); rA[r]=Math.max(rA[r],b.a); rD[r]=Math.max(rD[r],b.d); });
+    const gx=(n.align==='s'?0.9:0.75)*s, gy=0.24*s, ax=0.28*s;
+    const H=rA.reduce((p,v,i)=>p+v+rD[i],0)+gy*(Rn-1);
+    let y=-ax-H/2; const rowY=[]; for(let r=0;r<Rn;r++){ y+=rA[r]; rowY.push(y); y+=rD[r]+gy; }
+    const colX=[]; let x=0.08*s; for(let c=0;c<Cn;c++){ colX.push(x); x+=colW[c]+gx; }
+    const W=x-gx+0.08*s;
+    const kids=bs.map((b,i)=>{ const r=Math.floor(i/Cn), c=i%Cn; return {b,dx:n.align==='s'?colX[c]:colX[c]+(colW[c]-b.w)/2,dy:rowY[r]}; });
+    const b={w:W,a:ax+H/2,d:Math.max(H/2-ax,0),prims:[],kids};
+    return rtl?mirror(b):b;
+  }
+  case 'acc': {
+    const body=layRow(n.c[0],cx); const t=Math.max(1.2,0.045*s);
+    const y0=-(Math.max(body.a,0.6*s)+0.13*s); const W=body.w+0.14*s; const x1=0.04*s, x2=W-0.04*s, ah=0.13*s;
+    const prims=[];
+    if(n.v==='arc') prims.push({t:'path',sw:t,cmds:[['M',x1,y0+0.06*s],['Q',W/2,y0-0.24*s,x2,y0+0.06*s]]});
+    else {
+      prims.push({t:'line',x1,y1:y0,x2,y2:y0,sw:t});
+      if(n.v==='arrow'||n.v==='both') prims.push({t:'path',sw:t,cmds:[['M',x2-ah,y0-ah*0.6],['L',x2,y0],['L',x2-ah,y0+ah*0.6]]});
+      if(n.v==='both') prims.push({t:'path',sw:t,cmds:[['M',x1+ah,y0-ah*0.6],['L',x1,y0],['L',x1+ah,y0+ah*0.6]]});
+    }
+    const b={w:W,a:-y0+(n.v==='arc'?0.26:0.16)*s,d:body.d,prims,kids:[{b:body,dx:0.07*s,dy:0}]};
+    return rtl?mirror(b):b;
+  }
+  }
+  return {w:0,a:0,d:0,prims:[],kids:[]};
+}
+
+/* long division. Arabic layout follows the Kuwaiti textbooks: divisor on the left with a line under it,
+   a vertical stroke, then the dividend under a top line; quotient above the dividend, aligned by place value. */
+function longDiv(n,cx){
+  const s=cx.s, rtl=cx.dir==='rtl';
+  const dd=layRow(n.c[0],cx), dv=layRow(n.c[1],cx), q=layRow(n.c[2],cx);
+  const t=Math.max(1.3,0.05*s), g=0.12*s;
+  const top=-(Math.max(dd.a,dv.a,0.62*s)+g+t/2), bot=Math.max(dd.d,dv.d,0.18*s)+0.12*s;
+  const qy=top-t/2-0.14*s-q.d;
+  if(rtl){
+    const x0=0.1*s, xb=x0+dv.w+0.1*s, ddx=xb+0.12*s, xe=ddx+dd.w+0.14*s;
+    const shift=Math.max(0,q.w-(ddx+dd.w));
+    const X=v=>v+shift;
+    const prims=[{t:'path',sw:t,cmds:[['M',X(0),bot],['L',X(xb),bot],['L',X(xb),top],['L',X(xe),top]]}];
+    return {w:X(xe)+0.04*s,a:-qy+q.a,d:bot+t,prims,
+      kids:[{b:dv,dx:X(x0),dy:0},{b:dd,dx:X(ddx),dy:0},{b:q,dx:X(ddx+dd.w-q.w),dy:qy}]};
+  }
+  const H=bot-top, bw=0.18*s+0.06*H;
+  const x0=0.04*s, xb=x0+dv.w+0.12*s, ddx=xb+bw+0.06*s, xe=ddx+dd.w+0.12*s;
+  const qdx=Math.max(0,ddx+dd.w-q.w);
+  const prims=[
+    {t:'path',sw:t,cmds:[['M',xb,top],['Q',xb+bw*1.15,(top+bot)/2,xb,bot]]},
+    {t:'line',x1:xb,y1:top,x2:xe,y2:top,sw:t}
+  ];
+  return {w:Math.max(xe,qdx+q.w)+0.06*s,a:-qy+q.a,d:bot,prims,
+    kids:[{b:dv,dx:x0,dy:0},{b:dd,dx:ddx,dy:0},{b:q,dx:qdx,dy:qy}]};
+}
+
+function radical(n,cx,withIdx){
+  const s=cx.s; const body=layRow(n.c[withIdx?1:0],cx);
+  const g=0.1*s, t=Math.max(1.3,0.05*s);
+  const top=-(Math.max(body.a,0.6*s)+g+t/2), bot=Math.max(body.d,0.15*s)+0.05*s, H=bot-top;
+  const rw=0.4*s+0.08*H, hookY=top+0.58*H;
+  let ex=0, ib=null, iy=0;
+  if(withIdx){ ib=layRow(n.c[0],{s:Math.max(s*0.55,10),dir:cx.dir,depth:cx.depth+1}); ex=Math.max(0,ib.w-0.45*rw); iy=hookY-0.1*s-ib.d; }
+  const x0=ex;
+  const prims=[
+    {t:'path',sw:t,cmds:[['M',x0+0.02*s,hookY+0.07*s],['L',x0+0.18*rw,hookY],['L',x0+0.48*rw,bot],['L',x0+rw,top],['L',x0+rw+body.w+0.12*s,top]]},
+    {t:'line',x1:x0+0.18*rw,y1:hookY,x2:x0+0.48*rw,y2:bot,sw:t*2}
+  ];
+  const kids=[{b:body,dx:x0+rw+0.06*s,dy:0}];
+  if(ib) kids.push({b:ib,dx:x0+0.5*rw-ib.w,dy:iy});
+  const b={w:x0+rw+body.w+0.18*s,a:Math.max(-top+t,ib?-iy+ib.a:0),d:bot,prims,kids};
+  return cx.dir==='rtl'?mirror(b):b;
+}
+
+function bracket(o,x0,top,bot,bw,s,cl){
+  const X=v=>cl?x0+bw-v:x0+v; const mid=(top+bot)/2, h=bot-top, th=Math.max(1.3,0.055*s);
+  if(o==='('){ const x1=bw*0.92, xc=bw*0.0, k=0.13*s;
+    return [{t:'path',fill:true,cmds:[['M',X(x1),top],['Q',X(xc),mid,X(x1),bot],['L',X(x1-0.01*s),bot],['Q',X(xc+k),mid,X(x1-0.01*s),top],['Z']]}]; }
+  if(o==='['){ return [{t:'path',sw:th,cmds:[['M',X(bw*0.9),top],['L',X(bw*0.3),top],['L',X(bw*0.3),bot],['L',X(bw*0.9),bot]]}]; }
+  if(o==='{'){ const xm=bw*0.5, x1=bw*0.95, xa=bw*0.05, q=Math.min(0.12*h,0.18*s);
+    return [{t:'path',sw:th,cmds:[['M',X(x1),top],['Q',X(xm),top,X(xm),top+q],['L',X(xm),mid-q],['Q',X(xm),mid,X(xa),mid],['Q',X(xm),mid,X(xm),mid+q],['L',X(xm),bot-q],['Q',X(xm),bot,X(x1),bot]]}]; }
+  return [{t:'line',x1:X(bw/2),y1:top,x2:X(bw/2),y2:bot,sw:th}];
+}
+
+function flat(b,X,Y,out,rows){
+  for(const p of b.prims) out.push(tr(p,X,Y));
+  if(b.row){ const ab={row:b.row,x:X,y:Y,w:b.w,a:b.a,d:b.d,s:b.s,carets:b.carets.map(c=>X+c)}; b.row._abs=ab; rows.push(ab); }
+  for(const k of b.kids) flat(k.b,X+k.dx,Y+k.dy,out,rows);
+}
+function tr(p,X,Y){
+  const q=Object.assign({},p);
+  if(p.t==='text'||p.t==='ph'){ q.x+=X; q.y+=Y; }
+  else if(p.t==='line'){ q.x1+=X; q.x2+=X; q.y1+=Y; q.y2+=Y; }
+  else if(p.t==='path') q.cmds=p.cmds.map(c=>c.map((v,j)=>j===0?v:(j%2===1?v+X:v+Y)));
+  return q;
+}
+function layLines(lines,plain){
+  const s=S0, pad=0.45*s, gap=0.55*s, rtl=state.dir==='rtl';
+  const boxes=lines.map(r=>layRow(r,{s,dir:state.dir,depth:0}));
+  const Wc=Math.max(...boxes.map(b=>b.w));
+  // optional line numbers at the start of each line: (١) (٢) … or (أ) (ب) …
+  const labs=(!plain&&state.lnum&&state.lnum!=='none')?boxes.map((_,i)=>'('+(state.lnum==='abj'?ABJAD[i%ABJAD.length]:numTxt(i+1))+')'):null;
+  const lw=labs?Math.max(...labs.map(t=>measure(t,s,false).w))+0.55*s:0;
+  let y=pad; const out=[], rows=[], lb=[], labBox=[];
+  boxes.forEach((b,i)=>{
+    y+=b.a;
+    const x=pad+(rtl?0:lw)+(state.align==='right'?Wc-b.w:state.align==='center'?(Wc-b.w)/2:0);
+    flat(b,x,y,out,rows); lb.push({x,y,w:b.w,a:b.a,d:b.d});
+    if(labs){ const m=measure(labs[i],s,false), lx=rtl?pad+Wc+lw-m.w:pad; out.push(textPrim(labs[i],lx,y,s,false)); labBox.push({x:lx,w:m.w}); }
+    y+=b.d+gap;
+  });
+  return {W:Wc+lw+2*pad,H:y-gap+pad,prims:out,rows,lines:lb,labs:labBox};
+}
+
+/* ---------------- drawing ---------------- */
+const f2=v=>(+v).toFixed(2);
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const pathD=cmds=>cmds.map(c=>c[0]+c.slice(1).map(f2).join(' ')).join('');
+function primsSVG(prims,ph,phClass){
+  let o='';
+  for(const p of prims){
+    if(p.t==='text'){
+      const tf=p.flip?` transform="translate(${f2(2*p.x+p.w)},0) scale(-1,1)"`:'';
+      o+=`<text x="${f2(p.x)}" y="${f2(p.y)}" font-size="${f2(p.s)}"${p.it?' font-style="italic"':''}${tf}>${esc(p.str)}</text>`;
+    } else if(p.t==='line'){
+      o+=`<line x1="${f2(p.x1)}" y1="${f2(p.y1)}" x2="${f2(p.x2)}" y2="${f2(p.y2)}" stroke="${p.col||'currentColor'}" stroke-width="${f2(p.sw)}"${p.dash?` stroke-dasharray="${p.dash.map(f2).join(' ')}"`:''} stroke-linecap="${p.dash?'butt':'round'}"/>`;
+    } else if(p.t==='path'){
+      o+=p.fill?`<path d="${pathD(p.cmds)}" fill="currentColor"/>`:`<path d="${pathD(p.cmds)}" fill="none" stroke="currentColor" stroke-width="${f2(p.sw)}"${p.dash?` stroke-dasharray="${p.dash.map(f2).join(' ')}"`:''} stroke-linejoin="round" stroke-linecap="${p.dash?'butt':'round'}"/>`;
+    } else if(p.t==='ph' && ph){
+      o+=`<rect class="${phClass}" x="${f2(p.x)}" y="${f2(p.y)}" width="${f2(p.w)}" height="${f2(p.h)}" rx="2"/>`;
+    }
+  }
+  return o;
+}
+function drawCanvas(ctx,prims){
+  ctx.fillStyle='#000'; ctx.strokeStyle='#000'; ctx.textBaseline='alphabetic'; ctx.textAlign='left';
+  try{ ctx.direction='ltr'; }catch(e){}
+  ctx.lineJoin='round'; ctx.lineCap='round';
+  for(const p of prims){
+    if(p.t==='text'){
+      ctx.font=fontOf(p.s,p.it);
+      if(p.flip){ ctx.save(); ctx.translate(2*p.x+p.w,0); ctx.scale(-1,1); ctx.fillText(p.str,p.x,p.y); ctx.restore(); }
+      else ctx.fillText(p.str,p.x,p.y);
+    } else if(p.t==='line'){
+      ctx.lineWidth=p.sw; ctx.strokeStyle=p.col||'#000'; ctx.setLineDash(p.dash||[]); ctx.lineCap=p.dash?'butt':'round'; ctx.beginPath(); ctx.moveTo(p.x1,p.y1); ctx.lineTo(p.x2,p.y2); ctx.stroke(); ctx.setLineDash([]); ctx.strokeStyle='#000'; ctx.lineCap='round';
+    } else if(p.t==='path'){
+      const P=new Path2D(pathD(p.cmds));
+      if(p.fill) ctx.fill(P); else { ctx.lineWidth=p.sw; ctx.setLineDash(p.dash||[]); ctx.lineCap=p.dash?'butt':'round'; ctx.stroke(P); ctx.setLineDash([]); ctx.lineCap='round'; }
+    }
+  }
+}
+
+/* ---------------- screen render ---------------- */
+const $=id=>document.getElementById(id);
+const canvasEl=$('canvas'), paper=$('paper'), kbd=$('kbd');
+function caretXY(){
+  const a=cur.row._abs; if(!a) return {x:0,t:0,b:0};
+  const x=a.carets[Math.min(cur.i,a.carets.length-1)];
+  return {x,t:a.y-Math.max(a.a,0.62*a.s),b:a.y+Math.max(a.d,0.16*a.s)};
+}
+function render(){
+  const L=layLines(doc.lines); lastL=L;
+  const z=state.zoom; const c=caretXY();
+  let hl='';
+  if(cur.row._p && !hasSel()){ const a=cur.row._abs; const s=a.s; hl=`<rect class="act" x="${f2(a.x-0.05*s)}" y="${f2(a.y-a.a-0.04*s)}" width="${f2(a.w+0.1*s)}" height="${f2(a.a+a.d+0.08*s)}" rx="3"/>`; }
+  if(hasSel()){
+    if(sel.lines){
+      const lo=Math.min(sel.anc,sel.foc), hi=Math.max(sel.anc,sel.foc);
+      for(let li=lo;li<=hi;li++){ const l=L.lines[li]; hl+=`<rect class="selr" x="${f2(l.x-4)}" y="${f2(l.y-l.a-4)}" width="${f2(Math.max(l.w,10)+8)}" height="${f2(l.a+l.d+8)}" rx="3"/>`; }
+    } else {
+      const a=sel.row._abs, r=selRange(); let x0=Infinity,x1=-Infinity;
+      for(let k=r.a;k<=r.b;k++){ x0=Math.min(x0,a.carets[k]); x1=Math.max(x1,a.carets[k]); }
+      hl+=`<rect class="selr" x="${f2(x0)}" y="${f2(a.y-a.a-3)}" width="${f2(x1-x0)}" height="${f2(a.a+a.d+6)}" rx="2"/>`;
+    }
+  }
+  canvasEl.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" width="${f2(L.W*z)}" height="${f2(L.H*z)}" viewBox="0 0 ${f2(L.W)} ${f2(L.H)}" style="direction:ltr;font-family:${MF_SVG};color:#111" role="img" aria-label="المعادلة">${hl}<g fill="currentColor">${primsSVG(L.prims,true,'ph')}</g><line class="caret" x1="${f2(c.x)}" y1="${f2(c.t)}" x2="${f2(c.x)}" y2="${f2(c.b)}"/></svg>`;
+  const svg=canvasEl.firstChild; const r=svg.getBoundingClientRect(), pr=paper.getBoundingClientRect();
+  kbd.style.top=Math.max(0,Math.min(pr.height-4,r.top-pr.top+c.t*z))+'px'; kbd.style.insetInlineStart='auto'; kbd.style.left=Math.max(0,Math.min(pr.width-4,r.left-pr.left+c.x*z))+'px';
+  $('btnUndo').disabled=!undoS.length; $('btnRedo').disabled=!redoS.length;
+  store('arabic-eq-draft',JSON.stringify({j:ser(doc),st:stNow()}));
+}
+function nearestIdx(ab,x){ let bi=0,bd=Infinity; ab.carets.forEach((cx,i)=>{ const d=Math.abs(cx-x); if(d<bd){bd=d;bi=i;} }); return bi; }
+function hitPos(px,py){
+  let best=null, ba=Infinity; const tol=0.08*S0;
+  for(const r of lastL.rows){
+    const x0=r.x-tol, x1=r.x+r.w+tol, y0=r.y-Math.max(r.a,0.6*r.s)-tol, y1=r.y+Math.max(r.d,0.15*r.s)+tol;
+    if(px>=x0&&px<=x1&&py>=y0&&py<=y1){ const ar=(x1-x0)*(y1-y0); if(ar<ba){ba=ar;best=r;} }
+  }
+  if(!best){ let bd=Infinity; doc.lines.forEach(l=>{ const a=l._abs; const dy=Math.abs(py-(a.y-(a.a-a.d)/2)); if(dy<bd){bd=dy;best=a;} }); }
+  return {row:best.row,i:nearestIdx(best,px)};
+}
+
+/* ---------------- selection ---------------- */
+function hasSel(){ return !!sel && (sel.lines || sel.anc!==sel.foc); }
+function selRange(){ return {row:sel.row,a:Math.min(sel.anc,sel.foc),b:Math.max(sel.anc,sel.foc)}; }
+const clone=r=>JSON.parse(ser(r));
+function selectedLines(){
+  if(sel.lines){ const a=Math.min(sel.anc,sel.foc), b=Math.max(sel.anc,sel.foc); return doc.lines.slice(a,b+1).map(clone); }
+  const {row,a,b}=selRange(); return [clone(R(...row.items.slice(a,b)))];
+}
+function deleteSel(){
+  if(!hasSel()){ sel=null; return []; }
+  if(sel.lines){
+    const a=Math.min(sel.anc,sel.foc), b=Math.max(sel.anc,sel.foc);
+    const gone=doc.lines.splice(a,b-a+1); if(!doc.lines.length) doc.lines.push(R());
+    link(); const li=Math.min(a,doc.lines.length-1); cur={row:doc.lines[li],i:0}; sel=null;
+    return gone.flatMap(r=>r.items);
+  }
+  const {row,a,b}=selRange(); const gone=row.items.splice(a,b-a); cur={row,i:a}; sel=null; link(); return gone;
+}
+function chainOf(pos){
+  const ch=[{row:pos.row,lo:pos.i,hi:pos.i}]; let r=pos.row;
+  while(r._p){ const n=r._p, k=idxOf(n); r=n._pr; ch.push({row:r,lo:k,hi:k+1}); }
+  return ch;
+}
+function spanSel(A,B){
+  const ca=chainOf(A), cb=chainOf(B);
+  for(const x of ca){ const y=cb.find(z=>z.row===x.row); if(y){
+    const lo=Math.min(x.lo,y.lo), hi=Math.max(x.hi,y.hi); const fwd=(y.hi>x.hi)||(y.hi===x.hi&&y.lo>=x.lo);
+    return fwd?{row:x.row,anc:lo,foc:hi}:{row:x.row,anc:hi,foc:lo};
+  } }
+  return {lines:true,anc:ca[ca.length-1].row._line,foc:cb[cb.length-1].row._line};
+}
+function topLineOf(row){ while(row._p) row=row._p._pr; return row._line; }
+function extendH(step){
+  if(!sel || sel.lines) sel={row:cur.row,anc:cur.i,foc:cur.i};
+  const f=sel.foc+step;
+  if(f<0||f>sel.row.items.length){
+    const p=sel.row._p; if(!p) return;
+    const k=idxOf(p); sel={row:p._pr,anc:step>0?k:k+1,foc:step>0?k+1:k};
+  } else sel.foc=f;
+  cur={row:sel.row,i:sel.foc};
+}
+function extendV(dir){
+  if(!sel || !sel.lines){ const li=topLineOf(cur.row); sel={lines:true,anc:li,foc:li}; }
+  sel.foc=Math.max(0,Math.min(doc.lines.length-1,sel.foc+dir));
+  const l=doc.lines[sel.foc]; cur={row:l,i:dir>0?l.items.length:0};
+}
+function selectAll(){
+  if(doc.lines.length===1){ const l=doc.lines[0]; sel={row:l,anc:0,foc:l.items.length}; cur={row:l,i:l.items.length}; }
+  else { sel={lines:true,anc:0,foc:doc.lines.length-1}; const l=doc.lines[doc.lines.length-1]; cur={row:l,i:l.items.length}; }
+}
+/* the child box a template wraps the selection into, and where the caret goes afterwards */
+function wrapSlot(n){
+  switch(n.t){
+    case 'frac': return {fill:0,go:1};
+    case 'sqrt': case 'sup': case 'sub': case 'acc': return {fill:0,go:-1};
+    case 'root': return {fill:1,go:0};
+    case 'ssup': return {fill:0,go:1};
+    case 'ldiv': return {fill:0,go:1};
+    case 'par': return emptyDeep(n.c[0])?{fill:0,go:-1}:null;
+  }
+  return null;
+}
+
+/* ---------------- navigation ---------------- */
+function moveNext(){
+  const {row,i}=cur;
+  if(i<row.items.length){ const n=row.items[i]; cur=n.c?{row:n.c[0],i:0}:{row,i:i+1}; return; }
+  const p=row._p;
+  if(!p){ const li=row._line; if(li<doc.lines.length-1) cur={row:doc.lines[li+1],i:0}; return; }
+  cur = row._ci<p.c.length-1 ? {row:p.c[row._ci+1],i:0} : {row:p._pr,i:idxOf(p)+1};
+}
+function movePrev(){
+  const {row,i}=cur;
+  if(i>0){ const n=row.items[i-1]; if(n.c){ const r=n.c[n.c.length-1]; cur={row:r,i:r.items.length}; } else cur={row,i:i-1}; return; }
+  const p=row._p;
+  if(!p){ const li=row._line; if(li>0){ const r=doc.lines[li-1]; cur={row:r,i:r.items.length}; } return; }
+  if(row._ci>0){ const r=p.c[row._ci-1]; cur={row:r,i:r.items.length}; } else cur={row:p._pr,i:idxOf(p)};
+}
+function vTarget(n,ci,dir){
+  switch(n.t){
+    case 'frac': case 'root': return dir<0?(ci===1?0:-1):(ci===0?1:-1);
+    case 'ssup': return dir<0?(ci===1?0:-1):(ci===0?1:-1);
+    case 'big': return dir<0?(ci===0?1:-1):(ci===1?0:-1);
+    case 'mat': { const t=ci+dir*n.cols; return (t>=0&&t<n.c.length)?t:-1; }
+    case 'ldiv': return dir<0?(ci!==2?2:-1):(ci===2?0:-1);
+  }
+  return -1;
+}
+function moveV(dir){
+  const x=caretXY().x; let r=cur.row;
+  while(r._p){ const n=r._p, t=vTarget(n,r._ci,dir); if(t>=0){ const tr_=n.c[t]; cur={row:tr_,i:tr_._abs?nearestIdx(tr_._abs,x):0}; return; } r=n._pr; }
+  const li=r._line+dir; if(li>=0&&li<doc.lines.length){ const tr_=doc.lines[li]; cur={row:tr_,i:nearestIdx(tr_._abs,x)}; }
+}
+function tabNext(){
+  const p=cur.row._p;
+  if(!p){ moveNext(); return; }
+  cur = cur.row._ci<p.c.length-1 ? {row:p.c[cur.row._ci+1],i:0} : {row:p._pr,i:idxOf(p)+1};
+}
+
+/* ---------------- editing ---------------- */
+function act(fn){ snapshot(); fn(); link(); render(); }
+function ins(n,enter){
+  cur.row.items.splice(cur.i,0,n); link();
+  if(enter && n.c){ let r=n.c[0]; while(r.items.length===1 && r.items[0].c && r.items[0].t!=='sup') r=r.items[0].c[0]; cur={row:r,i:r.items.length}; }
+  else cur={row:cur.row,i:cur.i+1};
+}
+function placeNode(n){
+  const slot=hasSel()?wrapSlot(n):null;
+  if(!slot){ if(hasSel()) deleteSel(); ins(n,true); return; }
+  const gone=deleteSel(); n.c[slot.fill].items.push(...gone);
+  cur.row.items.splice(cur.i,0,n); link();
+  if(slot.go>=0){ const r=n.c[slot.go]; cur={row:r,i:r.items.length}; } else cur={row:n._pr,i:idxOf(n)+1};
+}
+function norm(ch){
+  const a=AR_DIG.indexOf(ch); if(a>=0) return String(a);
+  const p='۰۱۲۳۴۵۶۷۸۹'.indexOf(ch); if(p>=0) return String(p);
+  if(ch==='٫') return '.'; if(ch==='،') return ','; if(ch==='؛') return ';';
+  return ch;
+}
+function typeChar(ch){
+  if(ch==='\n'||ch==='\r'||ch==='\t') return;
+  if(state.textMode){ if(hasSel()) deleteSel(); ins(C(ch,'txt')); return; }
+  ch=norm(ch);
+  const p=cur.row._p, atEnd=cur.i===cur.row.items.length;
+  switch(ch){
+    case '^': placeNode(N.sup()); return;
+    case '_': placeNode(N.sub()); return;
+    case '/': placeNode(N.frac()); return;
+    case '(': case '[': case '{': placeNode(N.par(ch)); return;
+    case '|': if(!hasSel()&&p&&p.t==='par'&&p.o==='|'&&atEnd){ cur={row:p._pr,i:idxOf(p)+1}; return; } placeNode(N.par('|')); return;
+    case ')': case ']': case '}': if(p&&p.t==='par'&&atEnd) cur={row:p._pr,i:idxOf(p)+1}; return;
+    case '*': ch='×'; break;
+    case '-': ch='−'; break;
+    case ' ': if(hasSel()) deleteSel(); ins(C(' ','sp')); return;
+    case 'ـ': { const pv=cur.i>0?cur.row.items[cur.i-1]:null; if(pv&&pv.t==='ch'&&pv.k==='var'&&/^[ء-ي]$/.test(pv.v)) pv.v+='ـ'; return; }
+  }
+  if(hasSel()) deleteSel();
+  ins(C(ch));
+}
+function backspace(){
+  if(hasSel()){ act(()=>{ deleteSel(); }); return; }
+  const {row,i}=cur;
+  if(i>0){
+    const n=row.items[i-1];
+    if(n.c && !nodeEmpty(n)){ const r=n.c[n.c.length-1]; cur={row:r,i:r.items.length}; render(); return; }
+    act(()=>{ row.items.splice(i-1,1); cur={row,i:i-1}; }); return;
+  }
+  const p=row._p;
+  if(!p){ const li=row._line; if(li>0) act(()=>{ const pv=doc.lines[li-1], at=pv.items.length; pv.items.push(...row.items); doc.lines.splice(li,1); cur={row:pv,i:at}; }); return; }
+  if(nodeEmpty(p)){ act(()=>{ const pr=p._pr, k=idxOf(p); pr.items.splice(k,1); cur={row:pr,i:k}; }); return; }
+  if(row._ci>0) movePrev(); else cur={row:p._pr,i:idxOf(p)};
+  render();
+}
+function del(){
+  if(hasSel()){ act(()=>{ deleteSel(); }); return; }
+  const {row,i}=cur;
+  if(i<row.items.length){
+    const n=row.items[i];
+    if(n.c && !nodeEmpty(n)){ cur={row:n.c[0],i:0}; render(); return; }
+    act(()=>{ row.items.splice(i,1); }); return;
+  }
+  const p=row._p;
+  if(!p){ const li=row._line; if(li<doc.lines.length-1) act(()=>{ const nx=doc.lines[li+1]; row.items.push(...nx.items); doc.lines.splice(li+1,1); }); return; }
+  if(nodeEmpty(p)){ act(()=>{ const pr=p._pr, k=idxOf(p); pr.items.splice(k,1); cur={row:pr,i:k}; }); return; }
+  moveNext(); render();
+}
+function newline(){
+  act(()=>{ if(hasSel()) deleteSel(); let r=cur.row, i=cur.i; while(r._p){ i=idxOf(r._p)+1; r=r._p._pr; }
+    const tail=r.items.splice(i); const nl=R(...tail); doc.lines.splice(r._line+1,0,nl); cur={row:nl,i:0}; });
+}
+
+/* ---------------- keyboard ---------------- */
+let composing=false;
+kbd.addEventListener('compositionstart',()=>{composing=true;});
+kbd.addEventListener('compositionend',()=>{ composing=false; flushInput(); });
+kbd.addEventListener('input',()=>{ if(!composing) flushInput(); });
+function flushInput(){ const v=kbd.value; kbd.value=''; if(!v) return; act(()=>{ for(const ch of Array.from(v)) typeChar(ch); }); }
+function onKey(e){
+  if(e.isComposing) return;
+  const rtl=state.dir==='rtl'; let handled=true;
+  if((e.ctrlKey||e.metaKey) && !e.altKey){
+    if(e.code==='KeyZ'){ e.shiftKey?redo():undo(); e.preventDefault(); return; }
+    if(e.code==='KeyY'){ redo(); e.preventDefault(); return; }
+    if(e.code==='KeyA'){ selectAll(); render(); e.preventDefault(); return; }
+    if(e.code==='KeyC'){ doCopy(false); e.preventDefault(); return; }
+    if(e.code==='KeyX'){ doCopy(true); e.preventDefault(); return; }
+    return; // Ctrl+V reaches the paste handler below
+  }
+  if(e.shiftKey && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key)){
+    if(e.key==='ArrowLeft') extendH(rtl?1:-1);
+    else if(e.key==='ArrowRight') extendH(rtl?-1:1);
+    else if(e.key==='ArrowUp') extendV(-1);
+    else if(e.key==='ArrowDown') extendV(1);
+    else { if(!sel||sel.lines) sel={row:cur.row,anc:cur.i,foc:cur.i}; sel.foc=e.key==='Home'?0:sel.row.items.length; cur={row:sel.row,i:sel.foc}; }
+    render(); e.preventDefault(); return;
+  }
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','Tab','Escape'].includes(e.key) && hasSel()){
+    const wasInline=!sel.lines; const r=wasInline?selRange():null; sel=null;
+    if(wasInline && (e.key==='ArrowLeft'||e.key==='ArrowRight')){
+      const fwd=(e.key==='ArrowLeft')===rtl; cur={row:r.row,i:fwd?r.b:r.a}; render(); e.preventDefault(); return;
+    }
+    if(e.key==='Escape'){ render(); e.preventDefault(); return; }
+  }
+  switch(e.key){
+    case 'ArrowLeft': rtl?moveNext():movePrev(); render(); break;
+    case 'ArrowRight': rtl?movePrev():moveNext(); render(); break;
+    case 'ArrowUp': moveV(-1); render(); break;
+    case 'ArrowDown': moveV(1); render(); break;
+    case 'Home': cur={row:cur.row,i:0}; render(); break;
+    case 'End': cur={row:cur.row,i:cur.row.items.length}; render(); break;
+    case 'Backspace': backspace(); break;
+    case 'Delete': del(); break;
+    case 'Enter': newline(); break;
+    case 'Tab': tabNext(); render(); break;
+    default: handled=false;
+  }
+  if(handled) e.preventDefault();
+}
+kbd.addEventListener('keydown',onKey);
+function focusEd(){ kbd.focus({preventScroll:true}); }
+kbd.addEventListener('focus',()=>{ focused=true; paper.classList.add('focus'); });
+kbd.addEventListener('blur',()=>{ focused=false; paper.classList.remove('focus'); });
+let dragFrom=null;
+function posAt(e){
+  const svg=canvasEl.firstChild; if(!svg) return null;
+  const r=svg.getBoundingClientRect(); if(!(r.width>0)) return null;
+  return hitPos((e.clientX-r.left)/r.width*lastL.W,(e.clientY-r.top)/r.height*lastL.H);
+}
+paper.addEventListener('pointerdown',e=>{
+  if(e.button>0) return;
+  const pos=posAt(e);
+  if(pos){
+    if(e.shiftKey){ const from=sel&&!sel.lines?{row:sel.row,i:sel.anc}:cur; sel=spanSel(from,pos); }
+    else sel=null;
+    cur=pos; dragFrom=e.shiftKey?null:pos; render();
+    try{ paper.setPointerCapture(e.pointerId); }catch(err){}
+  }
+  e.preventDefault(); focusEd();
+});
+paper.addEventListener('pointermove',e=>{
+  if(!dragFrom) return;
+  const pos=posAt(e); if(!pos) return;
+  if(pos.row===dragFrom.row && pos.i===dragFrom.i){ if(sel){ sel=null; cur=pos; render(); } return; }
+  sel=spanSel(dragFrom,pos);
+  if(sel.lines){ const l=doc.lines[sel.foc]; cur={row:l,i:l.items.length}; } else cur={row:sel.row,i:sel.foc};
+  render();
+});
+const endDrag=()=>{ dragFrom=null; };
+paper.addEventListener('pointerup',endDrag); paper.addEventListener('pointercancel',endDrag);
+kbd.addEventListener('paste',e=>{
+  e.preventDefault();
+  const dt=e.clipboardData; const html=dt?dt.getData('text/html'):'', txt=dt?dt.getData('text/plain'):'';
+  const m=(html+' '+txt).match(/(?:#|ARABIC-EQ:)(e[qp][a-z2-7]+)/);
+  if(m){ decodeCode(m[1]).then(x=>{ pasteLines(x.d.lines); setStatus('لُصقت المعادلة وهي قابلة للتعديل.',true); }).catch(()=>pasteText(txt)); return; }
+  pasteText(txt);
+});
+function pasteText(txt){ if(!txt) return; act(()=>{ if(hasSel()) deleteSel(); for(const ch of Array.from(txt)) typeChar(ch); }); }
+function pasteLines(lines){
+  act(()=>{
+    if(hasSel()) deleteSel();
+    const L=lines.map(l=>R(...l.items));
+    if(L.length===1 || cur.row._p){
+      const items=L.flatMap(l=>l.items); cur.row.items.splice(cur.i,0,...items); cur={row:cur.row,i:cur.i+items.length};
+    } else {
+      const row=cur.row, tail=row.items.splice(cur.i); row.items.push(...L[0].items);
+      const rest=L.slice(1), last=rest[rest.length-1], at=last.items.length; last.items.push(...tail);
+      doc.lines.splice(row._line+1,0,...rest); cur={row:last,i:at};
+    }
+  });
+}
+
+/* ---------------- figures: number line, coordinate plane, geometric shapes ---------------- */
+const SIZES={s:0.75,m:1,l:1.35};
+const GRID_COL='#b4bcc6';
+function toNum(v){
+  const t=String(v==null?'':v).trim().replace(/[٠-٩]/g,d=>AR_DIG.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[−–]/g,'-').replace(/[٫,]/g,'.');
+  const n=parseFloat(t); return isFinite(n)?n:NaN;
+}
+function fmtNum(v){
+  v=Math.round(v*1e6)/1e6; let t=String(Math.abs(v));
+  if(state.nums==='ar') t=t.replace(/[0-9]/g,d=>AR_DIG[d]).replace('.',',');
+  return v<0?(state.dir==='rtl'?t+'−':'−'+t):t;   // Arabic notation writes the sign after the digits: ٣−
+}
+function ellCmds(cx,cy,rx,ry){ const k=0.5523;
+  return [['M',cx+rx,cy],['C',cx+rx,cy+k*ry,cx+k*rx,cy+ry,cx,cy+ry],['C',cx-k*rx,cy+ry,cx-rx,cy+k*ry,cx-rx,cy],['C',cx-rx,cy-k*ry,cx-k*rx,cy-ry,cx,cy-ry],['C',cx+k*rx,cy-ry,cx+rx,cy-k*ry,cx+rx,cy],['Z']]; }
+const dotPrim=(x,y,r)=>({t:'path',fill:true,cmds:ellCmds(x,y,r,r)});
+function arrowPrim(x,y,dx,dy,sz){ const L=Math.hypot(dx,dy)||1, ux=dx/L, uy=dy/L, bx=x-ux*sz, by=y-uy*sz, px=-uy*sz*0.42, py=ux*sz*0.42;
+  return {t:'path',fill:true,cmds:[['M',x,y],['L',bx+px,by+py],['L',bx-px,by-py],['Z']]}; }
+function midText(prims,str,x,y,fs){ if(!str) return 0; const m=measure(str,fs,false); prims.push(textPrim(str,x-m.w/2,y+0.32*fs,fs,false)); return m.w; }
+
+function figNline(p,s){
+  let from=toNum(p.from), to=toNum(p.to), step=toNum(p.step);
+  if(isNaN(from)) from=-5; if(isNaN(to)) to=5; if(!(step>0)) step=1; if(to<=from) to=from+step;
+  let n=Math.round((to-from)/step); n=Math.max(1,Math.min(n,60));
+  const u=0.95*s*(SIZES[p.size]||1), pad=0.8*s, fs=0.62*s, t=Math.max(1.3,0.05*s), showNums=p.nums!=='n', rev=p.rev==='y';
+  const W=n*u+2*pad, yl=0.42*s, H=yl+0.26*s+(showNums?fs*1.2:0.1*s);
+  const X=i=>rev?W-pad-i*u:pad+i*u;
+  const prims=[{t:'line',x1:0.14*s,y1:yl,x2:W-0.14*s,y2:yl,sw:t},arrowPrim(0.02*s,yl,-1,0,0.26*s),arrowPrim(W-0.02*s,yl,1,0,0.26*s)];
+  for(let i=0;i<=n;i++){
+    prims.push({t:'line',x1:X(i),y1:yl-0.15*s,x2:X(i),y2:yl+0.15*s,sw:t});
+    if(showNums) midText(prims,fmtNum(from+i*step),X(i),yl+0.3*s+fs*0.5,fs);
+  }
+  String(p.marks||'').split(/[\s،;؛]+/).forEach(m=>{ const v=toNum(m); if(isNaN(v)) return; const i=(v-from)/step; if(i>=-1e-9&&i<=n+1e-9) prims.push(dotPrim(X(i),yl,0.13*s)); });
+  return {W,H,prims};
+}
+
+function figPlane(p,s){
+  const I=(v,d)=>{ const n=Math.round(toNum(v)); return isNaN(n)?d:n; };
+  let xmin=I(p.xmin,-5), xmax=I(p.xmax,5), ymin=I(p.ymin,-5), ymax=I(p.ymax,5);
+  if(xmax<=xmin) xmax=xmin+1; if(ymax<=ymin) ymax=ymin+1;
+  xmax=Math.min(xmax,xmin+30); ymax=Math.min(ymax,ymin+30);
+  const u=0.62*s*(SIZES[p.size]||1), pad=0.85*s, fs=Math.min(0.46*s,u*0.62), t=Math.max(1.3,0.05*s);
+  const W=(xmax-xmin)*u+2*pad, H=(ymax-ymin)*u+2*pad;
+  const X=x=>pad+(x-xmin)*u, Y=y=>pad+(ymax-y)*u, prims=[];
+  if(p.grid!=='n'){
+    for(let x=xmin;x<=xmax;x++) prims.push({t:'line',x1:X(x),y1:Y(ymin),x2:X(x),y2:Y(ymax),sw:0.9,col:GRID_COL});
+    for(let y=ymin;y<=ymax;y++) prims.push({t:'line',x1:X(xmin),y1:Y(y),x2:X(xmax),y2:Y(y),sw:0.9,col:GRID_COL});
+  }
+  const ax=Math.min(Math.max(0,xmin),xmax), ay=Math.min(Math.max(0,ymin),ymax);   // axes sit at zero, or at the nearest edge
+  const ext=0.42*s, every=(xmax-xmin>14||ymax-ymin>14)?2:1;
+  prims.push({t:'line',x1:X(xmin)-ext,y1:Y(ay),x2:X(xmax)+ext,y2:Y(ay),sw:t},arrowPrim(X(xmax)+ext+0.1*s,Y(ay),1,0,0.24*s),arrowPrim(X(xmin)-ext-0.1*s,Y(ay),-1,0,0.24*s));
+  prims.push({t:'line',x1:X(ax),y1:Y(ymin)+ext,x2:X(ax),y2:Y(ymax)-ext,sw:t},arrowPrim(X(ax),Y(ymax)-ext-0.1*s,0,-1,0.24*s),arrowPrim(X(ax),Y(ymin)+ext+0.1*s,0,1,0.24*s));
+  midText(prims,'س',X(xmax)+ext-0.02*s,Y(ay)-0.36*s,0.6*s);
+  midText(prims,'ص',X(ax)+0.36*s,Y(ymax)-ext+0.02*s,0.6*s);
+  for(let x=xmin;x<=xmax;x++){ if(x===ax||x%every) continue; prims.push({t:'line',x1:X(x),y1:Y(ay)-0.07*s,x2:X(x),y2:Y(ay)+0.07*s,sw:t}); midText(prims,fmtNum(x),X(x),Y(ay)+0.1*s+fs*0.55,fs); }
+  for(let y=ymin;y<=ymax;y++){ if(y===ay||y%every) continue; prims.push({t:'line',x1:X(ax)-0.07*s,y1:Y(y),x2:X(ax)+0.07*s,y2:Y(y),sw:t}); const str=fmtNum(y), m=measure(str,fs,false); prims.push(textPrim(str,X(ax)-0.14*s-m.w,Y(y)+0.32*fs,fs,false)); }
+  const pts=[]; const re=/([^\s()،,;؛]*)\s*\(\s*([^,،;؛()]+?)\s*[,،;؛]\s*([^()]+?)\s*\)/g; let m;
+  while((m=re.exec(String(p.pts||'')))){ const x=toNum(m[2]), y=toNum(m[3]); if(!isNaN(x)&&!isNaN(y)) pts.push({n:m[1],x,y}); }
+  if(p.join==='y'&&pts.length>1){ const c=pts.map((q,i)=>[i?'L':'M',X(q.x),Y(q.y)]); if(pts.length>2) c.push(['Z']); prims.push({t:'path',sw:t*1.2,cmds:c}); }
+  pts.forEach(q=>{ prims.push(dotPrim(X(q.x),Y(q.y),0.1*s)); midText(prims,q.n,X(q.x)+0.3*s,Y(q.y)-0.3*s,0.55*s); });
+  return {W,H,prims};
+}
+
+const SHAPES={
+  tri:{n:'مثلث',v:[[0,0],[4,0],[1.3,3]],def:'أ ب جـ'},
+  rtri:{n:'مثلث قائم الزاوية',v:[[0,0],[4,0],[0,3]],right:[0],def:'ب جـ أ'},
+  itri:{n:'مثلث متساوي الساقين',v:[[0,0],[3,0],[1.5,3.4]],eq:[0,1,1],def:'ب جـ أ'},
+  etri:{n:'مثلث متساوي الأضلاع',v:[[0,0],[3.4,0],[1.7,2.944]],eq:[1,1,1],def:'ب جـ أ'},
+  sq:{n:'مربع',v:[[0,0],[3,0],[3,3],[0,3]],eq:[1,1,1,1],par:[1,2,1,2],right:[0,1,2,3],def:'أ ب جـ د'},
+  rect:{n:'مستطيل',v:[[0,0],[4.4,0],[4.4,2.6],[0,2.6]],eq:[1,2,1,2],par:[1,2,1,2],right:[0,1,2,3],def:'أ ب جـ د'},
+  para:{n:'متوازي أضلاع',v:[[0,0],[4,0],[5,2.4],[1,2.4]],eq:[1,2,1,2],par:[1,2,1,2],def:'أ ب جـ د'},
+  trap:{n:'شبه منحرف',v:[[0,0],[4.6,0],[3.6,2.4],[1,2.4]],par:[1,0,1,0],def:'أ ب جـ د'},
+  rhom:{n:'معيّن',v:[[2.4,0],[4.8,1.6],[2.4,3.2],[0,1.6]],eq:[1,1,1,1],par:[1,2,1,2],def:'أ ب جـ د'},
+  pent:{n:'خماسي منتظم',reg:5,def:'أ ب جـ د هـ'},
+  hex:{n:'سداسي منتظم',reg:6,def:'أ ب جـ د هـ و'},
+  circ:{n:'دائرة',def:'م أ'},
+  ang:{n:'زاوية',def:'أ ب جـ'},
+  cub:{n:'متوازي مستطيلات',def:''},
+  cyl:{n:'أسطوانة',def:''}
+};
+function figShape(p,s){
+  const u=0.62*s*(SIZES[p.size]||1), fs=0.6*s, t=Math.max(1.3,0.05*s), pad=0.85*s;
+  const def=SHAPES[p.kind]||SHAPES.tri;
+  const labels=String(p.labels||'').trim().split(/\s+/).filter(Boolean);
+  const sides=String(p.sides||'').split(/[،;؛]+/).map(x=>x.trim());
+  const prims=[]; let bx, maxw=0;
+  const T=(str,x,y)=>{ maxw=Math.max(maxw,midText(prims,str,x,y,fs)); };
+  const TL=(str,x,y)=>{ if(!str) return; const w=measure(str,fs,false).w; T(str,x+w/2,y); maxw=Math.max(maxw,w*2); };
+  const ln=(a,b,dash)=>prims.push({t:'line',x1:a[0],y1:a[1],x2:b[0],y2:b[1],sw:t,dash});
+  if(def.v||def.reg){
+    let P;
+    if(def.reg){ P=[]; for(let i=0;i<def.reg;i++){ const a=Math.PI/2+Math.PI/def.reg+i*2*Math.PI/def.reg; P.push([1.9*u*Math.cos(a),1.9*u*Math.sin(a)]); } }
+    else P=def.v.map(q=>[q[0]*u,-q[1]*u]);
+    const cxm=P.reduce((a,q)=>a+q[0],0)/P.length, cym=P.reduce((a,q)=>a+q[1],0)/P.length;
+    prims.push({t:'path',sw:t,cmds:[['M',P[0][0],P[0][1]],...P.slice(1).map(q=>['L',q[0],q[1]]),['Z']]});
+    (def.right||[]).forEach(i=>{ const q=P[i], e=to=>{ const dx=to[0]-q[0], dy=to[1]-q[1], L=Math.hypot(dx,dy)||1; return [dx/L*0.26*s,dy/L*0.26*s]; };
+      const e1=e(P[(i+1)%P.length]), e2=e(P[(i+P.length-1)%P.length]);
+      prims.push({t:'path',sw:t*0.8,cmds:[['M',q[0]+e1[0],q[1]+e1[1]],['L',q[0]+e1[0]+e2[0],q[1]+e1[1]+e2[1]],['L',q[0]+e2[0],q[1]+e2[1]]]}); });
+    const mk=p.mk||'n', eqA=def.eq||(def.reg?Array(def.reg).fill(1):null), parA=def.par||null;
+    P.forEach((q,i)=>{ const r=P[(i+1)%P.length]; let dx=r[0]-q[0], dy=r[1]-q[1]; const L=Math.hypot(dx,dy)||1; dx/=L; dy/=L;
+      if(dx<-1e-6||(Math.abs(dx)<1e-6&&dy>0)){ dx=-dx; dy=-dy; }      // opposite sides point the same way, so their arrows match
+      const nx=-dy, ny=dx, at=k=>[q[0]+(r[0]-q[0])*k,q[1]+(r[1]-q[1])*k];
+      const ne=(mk==='e'||mk==='b')&&eqA?eqA[i]|0:0, np=(mk==='p'||mk==='b')&&parA?parA[i]|0:0, both=ne&&np;
+      for(let k=0;k<ne;k++){ const c=at(both?0.64:0.5), o=(k-(ne-1)/2)*0.12*s, x=c[0]+dx*o, y=c[1]+dy*o; prims.push({t:'line',x1:x-nx*0.13*s,y1:y-ny*0.13*s,x2:x+nx*0.13*s,y2:y+ny*0.13*s,sw:t}); }
+      for(let k=0;k<np;k++){ const c=at(both?0.36:0.5), o=(k-(np-1)/2)*0.15*s, x=c[0]+dx*o, y=c[1]+dy*o, a=0.12*s; prims.push({t:'path',sw:t,cmds:[['M',x-dx*a+nx*a,y-dy*a+ny*a],['L',x+dx*a*0.5,y+dy*a*0.5],['L',x-dx*a-nx*a,y-dy*a-ny*a]]}); }
+    });
+    P.forEach((q,i)=>{ const dx=q[0]-cxm, dy=q[1]-cym, L=Math.hypot(dx,dy)||1; T(labels[i],q[0]+dx/L*0.45*s,q[1]+dy/L*0.45*s); });
+    P.forEach((q,i)=>{ const r=P[(i+1)%P.length], mx=(q[0]+r[0])/2, my=(q[1]+r[1])/2; let nx=-(r[1]-q[1]), ny=r[0]-q[0]; const L=Math.hypot(nx,ny)||1; nx/=L; ny/=L;
+      if((mx-cxm)*nx+(my-cym)*ny<0){ nx=-nx; ny=-ny; } const k=0.3*s+Math.abs(nx)*(sides[i]?measure(sides[i],fs,false).w/2:0)+Math.abs(ny)*fs*0.45; T(sides[i],mx+nx*k,my+ny*k); });
+    bx=[Math.min(...P.map(q=>q[0])),Math.min(...P.map(q=>q[1])),Math.max(...P.map(q=>q[0])),Math.max(...P.map(q=>q[1]))];
+  } else if(p.kind==='circ'){
+    const R=2.2*u; prims.push({t:'path',sw:t,cmds:ellCmds(0,0,R,R)},dotPrim(0,0,0.07*s));
+    if(labels[1]||sides[0]) ln([0,0],[R,0]);
+    T(labels[0],-0.36*s,0.1*s); T(labels[1],R+0.42*s,0); T(sides[0],R/2,-0.38*s);
+    let bot=R;
+    if(sides[1]){ const yd=R+0.42*s;       // the diameter is shown as a measured span under the circle
+      ln([-R,yd],[R,yd]); prims.push(arrowPrim(-R,yd,-1,0,0.2*s),arrowPrim(R,yd,1,0,0.2*s)); ln([-R,yd-0.12*s],[-R,yd+0.12*s]); ln([R,yd-0.12*s],[R,yd+0.12*s]);
+      T(sides[1],0,yd+0.42*s); bot=yd+0.3*s; }
+    bx=[-R,-R,R,bot];
+  } else if(p.kind==='ang'){
+    const Lr=4*u, th=50*Math.PI/180, A=[Lr,0], B=[Lr*Math.cos(th),-Lr*Math.sin(th)], r=0.9*u;
+    ln([0,0],A); ln([0,0],B); prims.push(arrowPrim(A[0],A[1],1,0,0.26*s),arrowPrim(B[0],B[1],B[0],B[1],0.26*s));
+    const rc=r/Math.cos(th/2); prims.push({t:'path',sw:t,cmds:[['M',r,0],['Q',rc*Math.cos(th/2),-rc*Math.sin(th/2),r*Math.cos(th),-r*Math.sin(th)]]});
+    T(labels[0],B[0]*0.82-0.4*s,B[1]*0.82-0.2*s); T(labels[1],-0.38*s,0.3*s); T(labels[2],A[0]*0.82,0.45*s);
+    T(sides[0],1.8*u*Math.cos(th/2),-1.8*u*Math.sin(th/2));
+    bx=[0,B[1],Lr,0];
+  } else if(p.kind==='cub'){
+    const w=4*u, h=2.4*u, ox=1.3*u, oy=-0.9*u;
+    const f=[[0,0],[w,0],[w,-h],[0,-h]], b=f.map(q=>[q[0]+ox,q[1]+oy]);
+    ln(f[0],f[1]); ln(f[1],f[2]); ln(f[2],f[3]); ln(f[3],f[0]); ln(f[3],b[3]); ln(b[3],b[2]); ln(f[2],b[2]); ln(f[1],b[1]); ln(b[1],b[2]);
+    const dash=[0.14*s,0.12*s]; ln(b[0],b[1],dash); ln(b[0],b[3],dash); ln(f[0],b[0],dash);
+    T(sides[0],w/2,0.42*s); TL(sides[1],w+ox/2+0.22*s,oy/2+0.32*s); TL(sides[2],w+ox+0.2*s,oy-h/2);
+    bx=[0,-h+oy,w+ox,0];
+  } else {
+    const rx=1.5*u, ry=0.45*u, h=3*u, e=ellCmds(0,0,rx,ry), dash=[0.14*s,0.12*s];
+    prims.push({t:'path',sw:t,cmds:ellCmds(0,-h,rx,ry)});
+    ln([-rx,-h],[-rx,0]); ln([rx,-h],[rx,0]);
+    prims.push({t:'path',sw:t,cmds:[e[0],e[1],e[2]]},{t:'path',sw:t,dash,cmds:[['M',-rx,0],e[3],e[4]]});
+    if(sides[0]){ ln([0,-h],[rx,-h]); prims.push(dotPrim(0,-h,0.06*s)); T(sides[0],rx/2,-h-ry-0.34*s); }
+    TL(sides[1],rx+0.2*s,-h/2);
+    bx=[-rx,-h-ry,rx,ry];
+  }
+  const padX=pad+maxw*0.5, dx=padX-bx[0], dy=pad-bx[1];
+  return {W:bx[2]-bx[0]+2*padX,H:bx[3]-bx[1]+2*pad,prims:prims.map(q=>tr(q,dx,dy))};
+}
+function layFig(n,cx){
+  const s=cx.s; let f;
+  try{ f=n.kind==='nline'?figNline(n.p,s):n.kind==='plane'?figPlane(n.p,s):figShape(n.p,s); }catch(e){ f={W:s,H:s,prims:[]}; }
+  const a=f.H/2+0.28*s, d=Math.max(f.H/2-0.28*s,0);
+  return {w:f.W+0.2*s,a,d,prims:f.prims.map(q=>tr(q,0.1*s,-a)),kids:[]};
+}
+
+/* ---------------- formula shorthand ----------------
+   \f{a}{b} fraction · \r{a} root · \n{k}{a} n-th root · ^{a} _{a} scripts · ( ) [ ] stretchy brackets
+   \a{a} absolute value · \fn{جا} function · \t{نق} joined Arabic word · \lim{a} limit · \int{lo}{hi} \sum{lo}{hi}
+   \bar{a} \vec{a} · spaces are ignored, ~ is a visible space, ـ joins to the previous letter (جـ) */
+function parseFx(src){
+  const s=Array.from(src); let i=0;
+  const skip=()=>{ while(s[i]===' ') i++; };
+  function group(){ skip(); if(s[i]==='{'){ i++; return seq('}'); } return seq(null,true); }
+  function scripts(out){
+    // a sub and a sup written together become one stacked script
+    let sub=null, sup=null;
+    while(s[i]==='^'||s[i]==='_'){ const k=s[i++]; const g=group(); if(k==='^') sup=g; else sub=g; }
+    if(sub&&sup){ const n=N.ssup(); n.c[0]=R(...sup); n.c[1]=R(...sub); out.push(n); }
+    else if(sup){ const n=N.sup(); n.c[0]=R(...sup); out.push(n); }
+    else if(sub){ const n=N.sub(); n.c[0]=R(...sub); out.push(n); }
+  }
+  function seq(end,single){
+    const out=[];
+    while(i<s.length){
+      const ch=s[i];
+      if(end&&ch===end){ i++; return out; }
+      if(ch===' '){ i++; continue; }
+      if(ch==='^'||ch==='_') scripts(out);
+      else if(ch==='\\'){ i++; let nm=''; while(i<s.length&&/[a-z]/.test(s[i])) nm+=s[i++]; out.push(cmd(nm)); }
+      else if(ch==='('||ch==='['){ i++; const g=seq(ch==='('?')':']'); out.push(N.par(ch,true,R(...g))); }
+      else if(ch==='ـ'){ i++; const pv=out[out.length-1]; if(pv&&pv.t==='ch') pv.v+='ـ'; continue; }
+      else if(ch==='~'){ i++; out.push(C(' ','sp')); }
+      else { i++; let v=norm(ch); if(v==='-') v='−'; if(v==='*') v='×'; out.push(C(v)); }
+      if(single) return out;
+    }
+    return out;
+  }
+  function cmd(nm){
+    switch(nm){
+      case 'f': { const n=N.frac(); n.c[0]=R(...group()); n.c[1]=R(...group()); return n; }
+      case 'r': { const n=N.sqrt(); n.c[0]=R(...group()); return n; }
+      case 'n': { const n=N.root(); n.c[0]=R(...group()); n.c[1]=R(...group()); return n; }
+      case 'a': return N.par('|',true,R(...group()));
+      case 'fn': return N.fn(group().map(x=>x.v).join(''));
+      case 't': { skip(); i++; let w=''; while(i<s.length&&s[i]!=='}') w+=s[i++]; i++; return {t:'grp',items:Array.from(w).map(c=>C(c,'txt'))}; }
+      case 'lim': { const n=N.lim('نها'); n.c[0]=R(...group()); return n; }
+      case 'int': case 'sum': { const n=N.big(nm==='int'?'∫':'∑'); n.c[0]=R(...group()); n.c[1]=R(...group()); return n; }
+      case 'bar': { const n=N.acc('bar'); n.c[0]=R(...group()); return n; }
+      case 'vec': { const n=N.acc('arrow'); n.c[0]=R(...group()); return n; }
+    }
+    return C('?');
+  }
+  const flatOut=a=>a.flatMap(n=>n.t==='grp'?n.items:[n]);
+  const fix=row=>{ row.items=flatOut(row.items); row.items.forEach(n=>n.c&&n.c.forEach(fix)); return row; };
+  return fix(R(...seq(null))).items;
+}
+
+/* well-known formulas, written in Arabic notation */
+const FX_MATH=[
+  ['القانون العام لحل المعادلة التربيعية','س = \\f{-ب ± \\r{ب^{2} - 4أجـ}}{2أ}'],
+  ['المميز','Δ = ب^{2} - 4أجـ'],
+  ['نظرية فيثاغورس','جـ^{2} = أ^{2} + ب^{2}'],
+  ['البعد بين نقطتين','ف = \\r{(س_{2} - س_{1})^{2} + (ص_{2} - ص_{1})^{2}}'],
+  ['نقطة المنتصف','م = (\\f{س_{1} + س_{2}}{2} , \\f{ص_{1} + ص_{2}}{2})'],
+  ['ميل المستقيم','م = \\f{ص_{2} - ص_{1}}{س_{2} - س_{1}}'],
+  ['معادلة المستقيم','ص = م س + ب'],
+  ['معادلة الدائرة','(س - د)^{2} + (ص - هـ)^{2} = \\t{نق}^{2}'],
+  ['مساحة الدائرة','م = π \\t{نق}^{2}'],
+  ['محيط الدائرة','\\t{مح} = 2π \\t{نق}'],
+  ['مساحة المثلث','م = \\f{1}{2} × ق × ع'],
+  ['حجم الكرة','ح = \\f{4}{3} π \\t{نق}^{3}'],
+  ['حجم الأسطوانة','ح = π \\t{نق}^{2} ع'],
+  ['الفرق بين مربعين','س^{2} - ص^{2} = (س - ص)(س + ص)'],
+  ['مربع مجموع حدين','(س + ص)^{2} = س^{2} + 2س ص + ص^{2}'],
+  ['ضرب القوى','أ^{م} × أ^{ن} = أ^{م + ن}'],
+  ['لوغاريتم حاصل الضرب','\\fn{لو}_{أ} (س ص) = \\fn{لو}_{أ} س + \\fn{لو}_{أ} ص'],
+  ['المتطابقة المثلثية الأساسية','\\fn{جا}^{2} س + \\fn{جتا}^{2} س = 1'],
+  ['الظل','\\fn{ظا} س = \\f{\\fn{جا} س}{\\fn{جتا} س}'],
+  ['قانون الجيب','\\f{أ}{\\fn{جا} أ} = \\f{ب}{\\fn{جا} ب} = \\f{جـ}{\\fn{جا} جـ}'],
+  ['قانون جيب التمام','أ^{2} = ب^{2} + جـ^{2} - 2ب جـ \\fn{جتا} أ'],
+  ['الحد العام للمتتابعة الحسابية','ح_{ن} = أ + (ن - 1)د'],
+  ['مجموع المتسلسلة الحسابية','جـ_{ن} = \\f{ن}{2}(2أ + (ن - 1)د)'],
+  ['الحد العام للمتتابعة الهندسية','ح_{ن} = أ ر^{ن - 1}'],
+  ['مجموع المتسلسلة الهندسية','جـ_{ن} = \\f{أ(1 - ر^{ن})}{1 - ر}'],
+  ['التوافيق','ق(ن , ر) = \\f{ن!}{ر!(ن - ر)!}'],
+  ['تعريف المشتقة','ق′(س) = \\lim{هـ → 0} \\f{ق(س + هـ) - ق(س)}{هـ}'],
+  ['مشتقة القوة','\\f{د}{د س}(س^{ن}) = ن س^{ن - 1}'],
+  ['تكامل القوة','\\int{}{} س^{ن} د س = \\f{س^{ن + 1}}{ن + 1} + ث']
+];
+const FX_PHYS=[
+  ['السرعة','ع = \\f{ف}{ز}'],
+  ['التسارع','ت = \\f{ع_{2} - ع_{1}}{ز}'],
+  ['معادلة الحركة الأولى','ع_{2} = ع_{1} + ت ز'],
+  ['معادلة الحركة الثانية','ف = ع_{1} ز + \\f{1}{2} ت ز^{2}'],
+  ['معادلة الحركة الثالثة','ع_{2}^{2} = ع_{1}^{2} + 2 ت ف'],
+  ['قانون نيوتن الثاني','ق = ك ت'],
+  ['الوزن','و = ك جـ'],
+  ['كمية الحركة','\\t{كح} = ك ع'],
+  ['الشغل','\\t{شغ} = ق × ف'],
+  ['القدرة','\\t{قد} = \\f{\\t{شغ}}{ز}'],
+  ['طاقة الحركة','ط_{ح} = \\f{1}{2} ك ع^{2}'],
+  ['طاقة الوضع','ط_{و} = ك جـ ف'],
+  ['الكثافة','ث = \\f{ك}{ح}'],
+  ['الضغط','ض = \\f{ق}{م}'],
+  ['قانون أوم','جـ = ت × م'],
+  ['قانون الجذب العام','ق = ج \\f{ك_{1} ك_{2}}{ف^{2}}'],
+  ['سرعة الموجة','ع = د × λ']
+];
+
+/* ---------------- palette ---------------- */
+const box=()=>({t:'box'});
+const TABS = [
+  {id:'tpl', name:'القوالب', items:[
+    {tip:'كسر', node:()=>N.frac()},
+    {tip:'جذر تربيعي', node:()=>N.sqrt()},
+    {tip:'جذر نوني', node:()=>N.root()},
+    {tip:'أُس', node:()=>N.sup(), base:true},
+    {tip:'دليل سفلي', node:()=>N.sub(), base:true},
+    {tip:'أُس ودليل', node:()=>N.ssup(), base:true},
+    {tip:'القسمة المطولة (المقسوم، ثم Tab للمقسوم عليه، ثم Tab للناتج)', node:()=>N.ldiv()},
+    'sep',
+    {tip:'أقواس', node:()=>N.par('(')},
+    {tip:'أقواس مربعة', node:()=>N.par('[')},
+    {tip:'حاصرتان', node:()=>N.par('{')},
+    {tip:'القيمة المطلقة', node:()=>N.par('|')},
+    'sep',
+    {tip:'مصفوفة ٢×٢', node:()=>N.par('[',true,R(N.mat(2,2)))},
+    {tip:'مصفوفة ٣×٣', node:()=>N.par('[',true,R(N.mat(3,3)))},
+    {tip:'مصفوفة ٢×١', node:()=>N.par('[',true,R(N.mat(2,1)))},
+    {tip:'محدد ٢×٢', node:()=>N.par('|',true,R(N.mat(2,2)))},
+    {tip:'محدد ٣×٣', node:()=>N.par('|',true,R(N.mat(3,3)))},
+    {tip:'نظام معادلتين', node:()=>N.par('{',false,R(N.mat(2,1,'s')))},
+    {tip:'نظام ثلاث معادلات', node:()=>N.par('{',false,R(N.mat(3,1,'s')))},
+    {tip:'دالة متعددة القاعدة', node:()=>N.par('{',false,R(N.mat(2,2,'s')))},
+    'sep',
+    {tip:'مجموع', node:()=>N.big('∑')},
+    {tip:'جداء', node:()=>N.big('∏')},
+    {tip:'تكامل', node:()=>N.big('∫')},
+    {tip:'نهاية', node:()=>N.lim('نها')},
+    {tip:'نهاية (lim)', node:()=>N.lim('lim')}
+  ]},
+  {id:'sym', name:'الرموز', items:[
+    ...'+−×÷±∓'.split('').map(v=>({ch:v})), 'sep',
+    ...'=≠≈≡<>≤≥∝'.split('').map(v=>({ch:v})), 'sep',
+    ...'→⇒⇔∴∵∞%!′:'.split('').map(v=>({ch:v})), 'sep',
+    ...'∈∉⊂⊃⊆⊇∪∩∅∀∃'.split('').map(v=>({ch:v})), 'sep',
+    {ch:','},{ch:';'},{ch:'…'},{ch:'·'}
+  ]},
+  {id:'let', name:'الحروف', items:[
+    ...['س','ص','ع','ل','م','ن','ك','هـ','أ','ب','جـ','د','و','ي','ق','ف','ر','ح','ط','ت'].map(v=>({ch:v,k:'var'})), 'sep',
+    ...'αβγδθλμπρσφωΔΣΩ'.split('').map(v=>({ch:v})), 'sep',
+    ...'xyzabcnk'.split('').map(v=>({ch:v}))
+  ]},
+  {id:'fn', name:'الدوال', items:[
+    ...['جا','جتا','ظا','قا','قتا','ظتا','لو','لط'].map(v=>({fn:v})), 'sep',
+    ...['sin','cos','tan','sec','csc','cot','log','ln'].map(v=>({fn:v})), 'sep',
+    {tip:'نهاية', node:()=>N.lim('نها')}, {tip:'مجموع', node:()=>N.big('∑')}, {tip:'تكامل', node:()=>N.big('∫')}
+  ]},
+  {id:'geo', name:'الهندسة', items:[
+    {tip:'قطعة مستقيمة', node:()=>N.acc('bar')},
+    {tip:'شعاع / متجه', node:()=>N.acc('arrow')},
+    {tip:'مستقيم', node:()=>N.acc('both')},
+    {tip:'قوس', node:()=>N.acc('arc')},
+    'sep',
+    ...'∠△∥⊥≅∼°π□⊙'.split('').map(v=>({ch:v}))
+  ]},
+  {id:'fig', name:'رسوم وأشكال', cards:true, items:[{dlg:['nline'],name:'خط أعداد'},{dlg:['plane'],name:'مستوى إحداثي'},...Object.keys(SHAPES).map(k=>({dlg:['shape',k],name:SHAPES[k].n}))]},
+  {id:'fxm', name:'صيغ رياضية', cards:true, items:FX_MATH.map(([name,fx])=>({name,fx}))},
+  {id:'fxp', name:'صيغ فيزيائية', cards:true, items:FX_PHYS.map(([name,fx])=>({name,fx}))}
+];
+let tab='tpl';
+function iconSVG(nodeFn,base,items,scale){
+  items=items||(base?[box(),nodeFn()]:[nodeFn()]);
+  const L=layLines([R(...items)],true); const l=L.lines[0], m=0.08*S0;
+  const wh=scale?` width="${f2((l.w+2*m)*scale)}" height="${f2((l.a+l.d+2*m)*scale)}"`:'';
+  return `<svg${wh} viewBox="${f2(l.x-m)} ${f2(l.y-l.a-m)} ${f2(l.w+2*m)} ${f2(l.a+l.d+2*m)}" style="direction:ltr;font-family:${MF_SVG}" aria-hidden="true"><g fill="currentColor">${primsSVG(L.prims,true,'iph')}</g></svg>`;
+}
+function renderTabs(){
+  $('tabs').innerHTML=TABS.map(t=>`<button type="button" role="tab" id="tab-${t.id}" aria-selected="${t.id===tab}" data-t="${t.id}">${t.name}</button>`).join('');
+}
+function renderPal(){
+  const T=TABS.find(t=>t.id===tab);
+  $('pal').classList.toggle('cards',!!T.cards);
+  $('pal').innerHTML=T.items.map((it,i)=>{
+    if(it.dlg) return `<button type="button" class="key fcard" data-i="${i}" title="${it.name}"><span class="fprev">${iconSVG(null,false,[figDefault(it.dlg[0],it.dlg[1])],it.dlg[0]==='shape'?0.42:0.3)}</span><span class="fname">${it.name}</span></button>`;
+    if(it.fx) return `<button type="button" class="key fcard" data-i="${i}" title="${it.name}"><span class="fprev">${iconSVG(null,false,parseFx(it.fx),0.4)}</span><span class="fname">${it.name}</span></button>`;
+    if(it==='sep') return '<span class="sep" aria-hidden="true"></span>';
+    if(it.node) return `<button type="button" class="key" data-i="${i}" title="${it.tip}" aria-label="${it.tip}">${iconSVG(it.node,it.base)}</button>`;
+    if(it.fn) return `<button type="button" class="key wide" data-i="${i}" title="${it.fn}">${esc(it.fn)}</button>`;
+    const shown=disp(it.ch,kindOf(it.ch));
+    return `<button type="button" class="key" data-i="${i}" title="${esc(it.ch)}">${esc(shown)}</button>`;
+  }).join('');
+  $('pal').querySelectorAll('.iph').forEach(el=>{ el.setAttribute('fill','currentColor'); el.setAttribute('opacity','0.28'); });
+}
+$('tabs').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; tab=b.dataset.t; renderTabs(); renderPal(); });
+$('pal').addEventListener('pointerdown',e=>{ if(e.target.closest('.key')) e.preventDefault(); });
+$('pal').addEventListener('click',e=>{
+  const b=e.target.closest('.key'); if(!b) return;
+  const it=TABS.find(t=>t.id===tab).items[+b.dataset.i];
+  if(it.dlg){ openFigDialog(it.dlg[0],null,it.dlg[1]); return; }
+  act(()=>{
+    if(it.node) placeNode(it.node());
+    else if(it.fx){ if(hasSel()) deleteSel(); const items=parseFx(it.fx); cur.row.items.splice(cur.i,0,...items); cur={row:cur.row,i:cur.i+items.length}; }
+    else { if(hasSel()) deleteSel(); if(it.fn) ins(N.fn(it.fn)); else ins(C(it.ch,it.k)); }
+  });
+  focusEd();
+});
+
+/* ---------------- figure dialog ---------------- */
+const SIZE_OPTS=[['s','صغير'],['m','متوسط'],['l','كبير']];
+const FIG_FORMS={
+  nline:{title:'خط الأعداد',fields:[
+    ['from','من','num','-5'],['to','إلى','num','5'],['step','مقدار الخطوة','num','1'],
+    ['size','المسافة بين العلامات','sel',SIZE_OPTS,'m'],
+    ['nums','الأعداد','sel',[['y','ظاهرة'],['n','مخفية ليكتبها الطالب']],'y'],
+    ['marks','نقاط مظللة، مثل: 2، -3','txt',''],
+    ['rev','اتجاه التزايد','sel',[['n','نحو اليمين'],['y','نحو اليسار']],'n']]},
+  plane:{title:'المستوى الإحداثي',fields:[
+    ['xmin','س من','num','-5'],['xmax','س إلى','num','5'],['ymin','ص من','num','-5'],['ymax','ص إلى','num','5'],
+    ['size','حجم المربعات','sel',SIZE_OPTS,'m'],
+    ['grid','الشبكة','sel',[['y','ظاهرة'],['n','مخفية']],'y'],
+    ['pts','نقاط، مثل: أ(2;3) ب(-1;4)','txt',''],
+    ['join','وصل النقاط بالترتيب','sel',[['n','لا'],['y','نعم']],'n']]},
+  shape:{title:'شكل هندسي',fields:[
+    ['kind','الشكل','sel',Object.keys(SHAPES).map(k=>[k,SHAPES[k].n]),'tri'],
+    ['labels','أسماء الرؤوس بالترتيب، بينها مسافات (للدائرة: المركز ثم نقطة عليها)','txt','أ ب جـ'],
+    ['sides','أطوال الأضلاع بالترتيب، بينها فاصلة ، (للدائرة: نصف القطر ، القطر)','txt',''],
+    ['mk','علامات الأضلاع','sel',[['n','بدون'],['e','تساوي الأضلاع'],['p','توازي الأضلاع'],['b','تساوي وتوازي']],'n'],
+    ['size','الحجم','sel',SIZE_OPTS,'m']]}
+};
+function figDefault(kind,shapeKind){
+  const p={}; FIG_FORMS[kind].fields.forEach(f=>{ p[f[0]]=f[2]==='sel'?f[4]:f[3]; });
+  if(kind==='shape'&&shapeKind){ p.kind=shapeKind; p.labels=SHAPES[shapeKind].def; }
+  return {t:'fig',kind,p};
+}
+let dlgState=null;
+function dlgRead(){
+  const p={}; FIG_FORMS[dlgState.kind].fields.forEach(f=>{ p[f[0]]=$('fg-'+f[0]).value; });
+  return p;
+}
+function dlgPreview(){
+  const node={t:'fig',kind:dlgState.kind,p:dlgRead()};
+  $('dlgPrev').innerHTML=iconSVG(null,false,[node],0.55);
+}
+function openFigDialog(kind,node,shapeKind){
+  const form=FIG_FORMS[kind], p=node?node.p:figDefault(kind,shapeKind).p;
+  dlgState={kind,node,lastDef:kind==='shape'?SHAPES[p.kind].def:null};
+  $('dlgTitle').textContent=form.title; $('dlgOk').textContent=node?'تحديث':'إدراج';
+  $('dlgBody').innerHTML=form.fields.map(f=>{
+    const id='fg-'+f[0], val=p[f[0]]!=null?p[f[0]]:'';
+    const ctl=f[2]==='sel'
+      ? `<select id="${id}">${f[3].map(o=>`<option value="${o[0]}"${o[0]===val?' selected':''}>${o[1]}</option>`).join('')}</select>`
+      : `<input id="${id}" type="text" ${f[2]==='num'?'inputmode="text" dir="ltr" class="num"':''} value="${esc(String(val)).replace(/"/g,'&quot;')}" autocomplete="off">`;
+    return `<label class="fld${f[2]==='txt'?' wide':''}" for="${id}"><span>${f[1]}</span>${ctl}</label>`;
+  }).join('');
+  $('dlgBack').hidden=false; dlgPreview();
+  const first=$('dlgBody').querySelector('input,select'); if(first&&!TOUCH) first.focus();
+}
+function closeDlg(){ $('dlgBack').hidden=true; dlgState=null; focusEd(); }
+$('dlgBody').addEventListener('input',e=>{
+  if(dlgState.kind==='shape'&&e.target.id==='fg-kind'){   // swap the default vertex names with the shape
+    const lab=$('fg-labels'), d=SHAPES[e.target.value].def;
+    if(lab.value.trim()===dlgState.lastDef) lab.value=d; dlgState.lastDef=d;
+  }
+  dlgPreview();
+});
+$('dlgCancel').addEventListener('click',closeDlg);
+$('dlgBack').addEventListener('pointerdown',e=>{ if(e.target===$('dlgBack')) closeDlg(); });
+$('dlg').addEventListener('submit',e=>{
+  e.preventDefault(); const p=dlgRead(), st=dlgState;
+  act(()=>{ if(st.node) st.node.p=p; else { if(hasSel()) deleteSel(); ins({t:'fig',kind:st.kind,p}); } });
+  closeDlg();
+  setStatus(st.node?'حُدّث الرسم.':'أُدرج الرسم. انقر عليه نقرتين لتغيير أسماء الرؤوس والأطوال والعلامات.',true);
+});
+function figNear(row,i,px){
+  const a=row._abs;
+  for(const k of [i-1,i]){ const it=row.items[k]; if(!it||it.t!=='fig') continue;
+    if(px==null) return it;
+    const x0=Math.min(a.carets[k],a.carets[k+1]), x1=Math.max(a.carets[k],a.carets[k+1]); if(px>=x0&&px<=x1) return it; }
+  return null;
+}
+function editFigAtCaret(){
+  const it=figNear(cur.row,cur.i,null);
+  if(it) openFigDialog(it.kind,it); else setStatus('ضع المؤشر بجانب خط أعداد أو مستوى إحداثي أو شكل، ثم اختر التعديل.');
+}
+paper.addEventListener('dblclick',e=>{
+  const svg=canvasEl.firstChild; if(!svg) return; const r=svg.getBoundingClientRect(); if(!(r.width>0)) return;
+  const px=(e.clientX-r.left)/r.width*lastL.W, pos=posAt(e); if(!pos) return;
+  const it=figNear(pos.row,pos.i,px); if(it){ sel=null; openFigDialog(it.kind,it); }
+});
+
+/* ---------------- menus ---------------- */
+const tpl=fn=>()=>act(()=>placeNode(fn()));
+const MENUS=[
+  ['ملف',[
+    ['معادلة جديدة',()=>$('btnClear').click()],
+    ['ورقة العمل…',()=>openWs()],
+    ['فتح صورة معادلة…',()=>$('fileOpen').click()],
+    ['حفظ في معادلاتي',()=>$('btnSave').click()],
+    '-',
+    ['نسخ كصورة',()=>doCopy(false)],
+    ['تنزيل PNG',()=>$('btnDl').click(),()=>!$('btnDl').hidden],
+    ['مشاركة الصورة',()=>$('btnShare').click(),()=>!$('btnShare').hidden],
+    ['نسخ رابط التعديل',()=>$('btnLink').click(),()=>!$('btnLink').hidden]]],
+  ['تحرير',[
+    ['تراجع',()=>undo()],['إعادة',()=>redo()],'-',
+    ['قص',()=>doCopy(true)],['نسخ',()=>doCopy(false)],['تحديد الكل',()=>{ selectAll(); render(); }],'-',
+    ['تعديل الرسم عند المؤشر…',()=>editFigAtCaret()]]],
+  ['إدراج',[
+    ['خط أعداد…',()=>openFigDialog('nline')],
+    ['مستوى إحداثي…',()=>openFigDialog('plane')],
+    ['شكل هندسي…',()=>openFigDialog('shape',null,'tri')],
+    '-',
+    ['كسر',tpl(N.frac)],['جذر تربيعي',tpl(N.sqrt)],['قسمة مطولة',tpl(N.ldiv)],
+    ['مصفوفة ٢×٢',tpl(()=>N.par('[',true,R(N.mat(2,2))))],
+    ['نظام معادلتين',tpl(()=>N.par('{',false,R(N.mat(2,1,'s'))))],
+    '-',
+    ['سطر جديد',()=>newline()]]],
+  ['تنسيق',[
+    ['اتجاه عربي ←',()=>$('dirRtl').click()],['اتجاه لاتيني →',()=>$('dirLtr').click()],'-',
+    ['أرقام عربية ١٢٣',()=>$('numAr').click()],['أرقام 123',()=>$('numEn').click()],'-',
+    ['محاذاة لليمين',()=>$('alR').click()],['محاذاة للوسط',()=>$('alC').click()],['محاذاة لليسار',()=>$('alL').click()],'-',
+    ['ترقيم الأسطر بالأرقام',()=>$('lnNum').click()],['ترقيم الأسطر بالحروف',()=>$('lnAbj').click()],['بدون ترقيم للأسطر',()=>$('lnNone').click()],'-',
+    ['وضع النص (تشغيل/إيقاف)',()=>$('btnText').click()]]],
+  ['مساعدة',[
+    ['اختصارات لوحة المفاتيح',()=>document.querySelector('.help').scrollIntoView({behavior:'smooth'})],
+    ['عن المحرر',()=>setStatus('محرر المعادلات العربي — إعداد: أ. محمد حسن المتولي',true)]]]
+];
+let openMenu=-1;
+function closeMenu(){ openMenu=-1; const p=$('menuPop'); p.hidden=true; $('menubar').querySelectorAll('.mb').forEach(b=>b.setAttribute('aria-expanded','false')); }
+function buildMenus(){
+  const nav=$('menubar');
+  nav.innerHTML=MENUS.map((m,i)=>`<button type="button" class="mb" id="mb-${i}" data-m="${i}" aria-haspopup="true" aria-expanded="false">${m[0]}</button>`).join('')+'<div class="menu-pop" id="menuPop" role="menu" hidden></div>';
+  nav.addEventListener('pointerdown',e=>{ if(e.target.closest('button')) e.preventDefault(); });
+  nav.addEventListener('click',e=>{
+    const mb=e.target.closest('.mb'), mi=e.target.closest('.mi');
+    if(mb){
+      const i=+mb.dataset.m; if(openMenu===i){ closeMenu(); return; }
+      closeMenu(); openMenu=i; mb.setAttribute('aria-expanded','true');
+      const pop=$('menuPop');
+      pop.innerHTML=MENUS[i][1].map((it,k)=>it==='-'?'<hr>':(it[2]&&!it[2]()?'':`<button type="button" class="mi" role="menuitem" data-k="${k}">${it[0]}</button>`)).join('');
+      pop.hidden=false;
+      const right=nav.clientWidth-(mb.offsetLeft+mb.offsetWidth);
+      pop.style.right=Math.max(0,Math.min(right,nav.clientWidth-pop.offsetWidth))+'px'; pop.style.top=(mb.offsetTop+mb.offsetHeight+2)+'px';
+    } else if(mi){
+      const it=MENUS[openMenu][1][+mi.dataset.k]; closeMenu(); it[1]();
+      if($('dlgBack').hidden) focusEd();
+    }
+  });
+  document.addEventListener('pointerdown',e=>{ if(openMenu>=0&&!e.target.closest('#menubar')) closeMenu(); });
+}
+
+/* ---------------- settings ---------------- */
+function syncSeg(id,val){ $(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===val))); }
+function syncAll(){
+  syncSeg('segDir',state.dir); syncSeg('segNum',state.nums); syncSeg('segAlign',state.align); syncSeg('segLnum',state.lnum||'none'); syncSeg('segBg',state.bg);
+  $('btnText').setAttribute('aria-pressed',String(state.textMode)); $('modeTag').hidden=!state.textMode;
+}
+$('segDir').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; state.dir=b.dataset.v; state.align=state.dir==='rtl'?'right':'left'; syncAll(); renderPal(); render(); focusEd(); });
+$('segNum').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; state.nums=b.dataset.v; syncAll(); renderPal(); renderKeypad(); render(); focusEd(); });
+$('segAlign').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; state.align=b.dataset.v; syncAll(); render(); focusEd(); });
+$('segLnum').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; state.lnum=b.dataset.v; syncAll(); render(); focusEd(); });
+$('segBg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; state.bg=b.dataset.v; syncAll(); });
+$('btnText').addEventListener('click',()=>{ state.textMode=!state.textMode; syncAll(); focusEd(); });
+$('zoom').addEventListener('input',e=>{ state.zoom=+e.target.value; render(); });
+$('btnUndo').addEventListener('click',()=>{ undo(); focusEd(); });
+$('btnRedo').addEventListener('click',()=>{ redo(); focusEd(); });
+$('btnClear').addEventListener('click',()=>{ sel=null; act(()=>{ doc={lines:[R()]}; link(); cur={row:doc.lines[0],i:0}; }); setStatus('مُسحت المعادلة. تستطيع التراجع بـ Ctrl+Z.'); focusEd(); });
+
+/* ---------------- export ---------------- */
+function setStatus(msg,ok){ const s=$('status'); s.textContent=msg; s.className='status'+(ok?' ok':''); }
+function hasContent(){ return doc.lines.some(r=>!emptyDeep(r)); }
+function targetLines(){ return hasSel()?selectedLines():doc.lines.map(clone); }
+const linesHaveContent=lines=>lines.some(r=>!emptyDeep(r));
+function exportCanvas(res,lines){
+  const L=layLines(lines||doc.lines); let lastBase=0;
+  const m=0.18*S0;
+  let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+  L.lines.forEach(l=>{ if(l.w<=0) return; lastBase=l.y; x0=Math.min(x0,l.x); x1=Math.max(x1,l.x+l.w); y0=Math.min(y0,l.y-l.a); y1=Math.max(y1,l.y+l.d); });
+  (L.labs||[]).forEach(q=>{ x0=Math.min(x0,q.x); x1=Math.max(x1,q.x+q.w); });
+  const pt=+$('pt').value; const k=(pt*96/72)/S0*res;
+  const cv=document.createElement('canvas');
+  cv.width=Math.ceil((x1-x0+2*m)*k); cv.height=Math.ceil((y1-y0+2*m)*k);
+  const ctx=cv.getContext('2d');
+  if(state.bg==='white'){ ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height); }
+  ctx.scale(k,k); ctx.translate(-x0+m,-y0+m);
+  drawCanvas(ctx,L.prims.filter(p=>p.t!=='ph'));
+  const ppu=pt/S0; cv._g={wPt:(x1-x0+2*m)*ppu,hPt:(y1-y0+2*m)*ppu,descPt:(y1+m-lastBase)*ppu};
+  return cv;
+}
+const CRC=(()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; })();
+function crc32(u8){ let c=0xFFFFFFFF; for(let i=0;i<u8.length;i++) c=CRC[(c^u8[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function pngChunk(type,data){
+  const c=new Uint8Array(12+data.length), dv=new DataView(c.buffer);
+  dv.setUint32(0,data.length); for(let i=0;i<4;i++) c[4+i]=type.charCodeAt(i); c.set(data,8);
+  dv.setUint32(8+data.length,crc32(c.subarray(4,8+data.length))); return c;
+}
+async function pngBytes(cv,dpi,code){
+  const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+  const buf=new Uint8Array(await blob.arrayBuffer());
+  const ppm=Math.round(dpi/0.0254);
+  const ph=new Uint8Array(9), pv=new DataView(ph.buffer); pv.setUint32(0,ppm); pv.setUint32(4,ppm); ph[8]=1;
+  const parts=[pngChunk('pHYs',ph)];
+  if(code) parts.push(pngChunk('tEXt',new TextEncoder().encode(PNG_KEY+'\0'+code)));
+  const extra=parts.reduce((s,p)=>s+p.length,0);
+  const out=new Uint8Array(buf.length+extra); out.set(buf.subarray(0,33)); let o=33;
+  for(const p of parts){ out.set(p,o); o+=p.length; } out.set(buf.subarray(33),o);
+  return out;
+}
+
+/* ---------- equation code: kept inside the image and in the edit link ---------- */
+const SELF=(window.desk||window.claude||!/^https?:$/.test(location.protocol))?'https://claude.ai/artifact/2edn1jpowbcpRVsK87sPuy':location.href.split('#')[0];
+const DESK=window.desk||null;
+const ONCLAUDE=!!window.claude;
+const ALONE=!DESK&&!ONCLAUDE;   // opened from its own address: the installable phone app, or a local file   // set by the Windows program; absent on the web
+const PNG_KEY='arabic-eq';
+const B32='abcdefghijklmnopqrstuvwxyz234567';
+function b32(u8){ let out='',bits=0,val=0; for(const b of u8){ val=(val<<8)|b; bits+=8; while(bits>=5){ out+=B32[(val>>>(bits-5))&31]; bits-=5; } } if(bits>0) out+=B32[(val<<(5-bits))&31]; return out; }
+function unb32(s){ const out=[]; let bits=0,val=0; for(const ch of s){ const v=B32.indexOf(ch); if(v<0) throw new Error('bad'); val=(val<<5)|v; bits+=5; if(bits>=8){ out.push((val>>>(bits-8))&255); bits-=8; } } return new Uint8Array(out); }
+async function pipe(u8,stream){ return new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(stream)).arrayBuffer()); }
+const payload=lines=>JSON.stringify({j:ser({lines}),s:[state.dir,state.nums,state.align,state.lnum]});
+async function encodeLines(lines){
+  const u8=new TextEncoder().encode(payload(lines));
+  try{ return 'eq'+b32(await pipe(u8,new CompressionStream('deflate-raw'))); }catch(e){ return 'ep'+b32(u8); }
+}
+const encodeDoc=()=>encodeLines(doc.lines);
+async function decodeCode(code){
+  if(!/^e[qp][a-z2-7]+$/.test(code)) throw new Error('bad');
+  const raw=unb32(code.slice(2));
+  const bytes=code[1]==='q'?await pipe(raw,new DecompressionStream('deflate-raw')):raw;
+  const o=JSON.parse(new TextDecoder().decode(bytes));
+  const d=JSON.parse(o.j); if(!d.lines||!d.lines.length) throw new Error('bad');
+  return {d,st:{dir:o.s[0],nums:o.s[1],align:o.s[2],lnum:o.s[3]||'none'}};
+}
+function openDecoded(x,msg){
+  act(()=>{ doc=x.d; Object.assign(state,x.st); link(); const l=doc.lines[doc.lines.length-1]; cur={row:l,i:l.items.length}; });
+  syncAll(); renderPal(); setStatus(msg,true); focusEd();
+}
+async function openFromHash(){
+  const h=decodeURIComponent((location.hash||'').slice(1));
+  if(!/^e[qp]/.test(h)) return;
+  try{ openDecoded(await decodeCode(h),'فُتحت المعادلة للتعديل. بعد التعديل اضغط «نسخ كصورة» والصقها مكان الصورة القديمة.'); }
+  catch(e){ setStatus('تعذّرت قراءة المعادلة من الرابط. ربما قُصّ الرابط أثناء النسخ.'); }
+}
+window.addEventListener('hashchange',openFromHash);
+function readPngCode(u8){
+  if(u8.length<8||u8[1]!==0x50||u8[2]!==0x4E||u8[3]!==0x47) return null;
+  const dv=new DataView(u8.buffer,u8.byteOffset,u8.byteLength); let o=8;
+  while(o+8<=u8.length){
+    const len=dv.getUint32(o); const type=String.fromCharCode(u8[o+4],u8[o+5],u8[o+6],u8[o+7]);
+    if(type==='tEXt'){ const txt=new TextDecoder('latin1').decode(u8.subarray(o+8,o+8+len)); const z=txt.indexOf('\0'); if(txt.slice(0,z)===PNG_KEY) return txt.slice(z+1); }
+    if(type==='IEND') break; o+=12+len;
+  }
+  return null;
+}
+async function openImageFile(file){
+  if(!file) return;
+  try{
+    const code=readPngCode(new Uint8Array(await file.arrayBuffer()));
+    if(!code){ setStatus('هذه الصورة لم تُصدَّر من المحرر، أو فقدت بيانات المعادلة. افتح الملف الأصلي المنزّل من هنا.'); return; }
+    openDecoded(await decodeCode(code),'فُتحت المعادلة من الصورة وهي جاهزة للتعديل.');
+  }catch(e){ setStatus('تعذّرت قراءة المعادلة من هذه الصورة.'); }
+}
+$('fileOpen').addEventListener('change',e=>{ openImageFile(e.target.files[0]); e.target.value=''; });
+paper.addEventListener('dragover',e=>{ e.preventDefault(); });
+paper.addEventListener('drop',e=>{ e.preventDefault(); const f=e.dataTransfer&&e.dataTransfer.files[0]; if(f) openImageFile(f); });
+
+/* copy: the selection (or the whole equation) goes to the clipboard as an image that carries its edit link */
+let pendingCopy=null;
+function imgHTML(src,cv,code){
+  return `<a href="${SELF}#${code}"><img src="${src}" width="${Math.round(cv.width/2)}" height="${Math.round(cv.height/2)}" alt="معادلة — Ctrl+نقرة للتعديل"></a>`;
+}
+function copyDone(cut,partial){
+  if(cut && hasSel()) act(()=>{ deleteSel(); });
+  setStatus((partial?'نُسخ الجزء المحدد. ':'نُسخت المعادلة. ')+(DESK?'الصقه في Word أو داخل المحرر بـ Ctrl+V.':'الصقه في Word بـ Ctrl+V. لتعديله لاحقًا: Ctrl + نقرة على الصورة.'),true);
+}
+function syncCopy(lines,cut,partial){
+  const code='ep'+b32(new TextEncoder().encode(payload(lines)));
+  const cv=exportCanvas(2,lines);
+  pendingCopy={html:imgHTML(cv.toDataURL('image/png'),cv,code),text:SELF+'#'+code};
+  let ok=false; try{ ok=document.execCommand('copy'); }catch(e){}
+  pendingCopy=null;
+  if(ok) copyDone(cut,partial); else setStatus('المتصفح منع النسخ هنا. جرّب Chrome أو Edge، أو استخدم «تنزيل PNG».');
+}
+kbd.addEventListener('copy',e=>{ if(!pendingCopy) return; e.preventDefault(); e.clipboardData.setData('text/html',pendingCopy.html); e.clipboardData.setData('text/plain',pendingCopy.text); });
+kbd.addEventListener('cut',e=>{ e.preventDefault(); });
+function doCopy(cut){
+  const partial=hasSel(); const lines=targetLines();
+  if(!linesHaveContent(lines)){ setStatus(partial?'الجزء المحدد فارغ.':'اكتب معادلة أولًا.'); return; }
+  if(DESK){
+    encodeLines(lines).then(async code=>{
+      const cv=exportCanvas(2,lines); const bytes=await pngBytes(cv,192,code);
+      await DESK.copy({png:bytes.buffer.slice(0),code});
+      copyDone(cut,partial);
+    }).catch(()=>setStatus('تعذّر النسخ.'));
+    return;
+  }
+  if(!(navigator.clipboard && window.ClipboardItem)){ syncCopy(lines,cut,partial); return; }
+  const work=(async()=>{
+    const code=await encodeLines(lines); const cv=exportCanvas(2,lines);
+    const bytes=await pngBytes(cv,192,code);
+    let bin=''; for(let i=0;i<bytes.length;i+=8192) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+8192));
+    return {png:new Blob([bytes],{type:'image/png'}),html:new Blob([imgHTML('data:image/png;base64,'+btoa(bin),cv,code)],{type:'text/html'})};
+  })();
+  try{
+    navigator.clipboard.write([new ClipboardItem({'text/html':work.then(w=>w.html),'image/png':work.then(w=>w.png)})])
+      .then(()=>copyDone(cut,partial),()=>setStatus('المتصفح منع النسخ هنا. افتح الصفحة في Chrome أو Edge وجرّب مرة أخرى، أو استخدم «تنزيل PNG».'));
+  }catch(e){ syncCopy(lines,cut,partial); }
+}
+$('btnCopy').addEventListener('click',()=>{ doCopy(false); });
+$('btnLink').addEventListener('click',()=>{
+  const lines=targetLines();
+  if(!linesHaveContent(lines)){ setStatus('اكتب معادلة أولًا.'); return; }
+  try{
+    const p=encodeLines(lines).then(code=>new Blob([SELF+'#'+code],{type:'text/plain'}));
+    navigator.clipboard.write([new ClipboardItem({'text/plain':p})]).then(
+      ()=>setStatus('نُسخ رابط التعديل. في Word: حدّد صورة المعادلة، اضغط Ctrl+K، الصق الرابط، ثم «موافق».',true),
+      ()=>setStatus('المتصفح منع نسخ الرابط هنا.'));
+  }catch(e){ setStatus('المتصفح منع نسخ الرابط هنا.'); }
+});
+let downloads=null;
+if(DESK){ downloads={save:async o=>{ const r=await DESK.savePng({filename:o.filename,data:await o.data.arrayBuffer()}); if(!r) throw {code:'declined'}; return {status:'saved'}; }}; $('btnDl').hidden=false; $('btnDl').textContent='حفظ صورة PNG'; $('btnLink').hidden=true; }
+else if(ALONE){
+  downloads={save:async o=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(o.data); a.download=o.filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),4000); return {status:'saved'}; }};
+  $('btnDl').hidden=false;
+}
+else if(window.claude && typeof window.claude.use==='function'){
+  window.claude.use('downloads').then(d=>{ downloads=d; $('btnDl').hidden=!d; }).catch(()=>{});
+}
+$('btnDl').addEventListener('click',async()=>{
+  const lines=targetLines();
+  if(!linesHaveContent(lines)){ setStatus('اكتب معادلة أولًا.'); return; }
+  if(!downloads){ setStatus('التنزيل غير متاح في هذا العرض.'); return; }
+  try{
+    const res=4; const code=await encodeLines(lines); const bytes=await pngBytes(exportCanvas(res,lines),96*res,code);
+    const d=new Date(); const name='معادلة-'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'-'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'.png';
+    await downloads.save({filename:name,data:new Blob([bytes])});
+    setStatus((DESK?'حُفظت الصورة. ':'نُزّلت الصورة. ')+'أدرجها في Word من «إدراج ← صور» وستظهر بالحجم الذي اخترته.',true);
+  }catch(e){ if(e&&e.code==='declined') setStatus('أُلغي التنزيل.'); else setStatus('تعذّر التنزيل. جرّب «نسخ كصورة».'); }
+});
+
+/* ---------------- saved equations ---------------- */
+const SK='arabic-eq-saved';
+function getSaved(){ try{ return JSON.parse(load(SK)||'[]'); }catch(e){ return []; } }
+function putSaved(a){ store(SK,JSON.stringify(a)); }
+function thumb(item){
+  const keep=stNow();
+  Object.assign(state,{lnum:'none'},item.st); let svg='';
+  try{ const lines=JSON.parse(item.j).lines; const L=layLines(lines);
+    svg=`<svg viewBox="0 0 ${f2(L.W)} ${f2(L.H)}" width="${f2(L.W*0.45)}" style="direction:ltr;font-family:${MF_SVG};color:#111" aria-hidden="true"><g fill="currentColor">${primsSVG(L.prims,false,'')}</g></svg>`;
+  }catch(e){}
+  Object.assign(state,keep); return svg;
+}
+function renderSaved(){
+  const a=getSaved(); const el=$('saved');
+  if(!a.length){ el.innerHTML='<p class="empty">لا توجد معادلات محفوظة بعد. اضغط «حفظ في معادلاتي» لتحتفظ بالمعادلة الحالية في هذا المتصفح.</p>'; return; }
+  el.innerHTML=a.map((it,i)=>`<div class="card"><div class="th">${thumb(it)}</div><div class="row"><button type="button" class="btn" data-open="${i}">فتح</button><button type="button" class="btn" data-del="${i}">حذف</button></div></div>`).join('');
+  if(lastL) link();
+}
+$('saved').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return; const a=getSaved();
+  if(b.dataset.open!=null){ const it=a[+b.dataset.open]; act(()=>{ doc=JSON.parse(it.j); Object.assign(state,it.st); link(); const l=doc.lines[doc.lines.length-1]; cur={row:l,i:l.items.length}; }); syncAll(); renderPal(); setStatus('فُتحت المعادلة.',true); focusEd(); }
+  if(b.dataset.del!=null){ a.splice(+b.dataset.del,1); putSaved(a); renderSaved(); }
+});
+$('btnSave').addEventListener('click',()=>{
+  if(!hasContent()){ setStatus('اكتب معادلة أولًا.'); return; }
+  const a=getSaved(); a.unshift({j:ser(doc),st:stNow(),t:Date.now()}); putSaved(a.slice(0,60));
+  renderSaved(); setStatus('حُفظت في «معادلاتي» على هذا المتصفح.',true);
+});
+
+/* ---------------- touch keypad (phones and tablets) ---------------- */
+const TOUCH=window.matchMedia&&window.matchMedia('(pointer:coarse)').matches;
+let selMode=false, sysKb=false;
+const KEYS=[
+  ['7'],['8'],['9'],['÷'],['('],[')'],
+  ['4'],['5'],['6'],['×'],['س'],['ص'],
+  ['1'],['2'],['3'],['−'],['.'],['='],
+  ['0'],['+'],['/','كسر','fn'],['^','أُس','fn'],['_','دليل','fn'],[' ','مسافة','fn'],
+  ['@sel','تحديد','fn'],['@ArrowRight','→','fn'],['@ArrowLeft','←','fn'],['@Tab','التالي','fn'],['@Backspace','⌫','fn'],['@Enter','↵','fn'],
+  ['@kb','⌨ لوحة مفاتيح الهاتف','fn w3'],['@ArrowUp','↑','fn'],['@ArrowDown','↓','fn'],['@undo','↶','fn']
+];
+function renderKeypad(){
+  const el=$('keypad'); if(el.hidden) return;
+  el.innerHTML=KEYS.map(([k,label,cls])=>{
+    const shown=label||disp(k,kindOf(k));
+    const pressed=(k==='@sel'&&selMode)||(k==='@kb'&&sysKb);
+    return `<button type="button" data-k="${k}" class="${cls||''}" aria-pressed="${pressed}">${shown}</button>`;
+  }).join('');
+}
+function initKeypad(){
+  if(!TOUCH) return;
+  $('keypad').hidden=false; kbd.setAttribute('inputmode','none'); renderKeypad();
+  $('keypad').addEventListener('pointerdown',e=>{ if(e.target.closest('button')) e.preventDefault(); });
+  $('keypad').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return; const k=b.dataset.k;
+    if(k==='@sel'){ selMode=!selMode; renderKeypad(); }
+    else if(k==='@kb'){ sysKb=!sysKb; kbd.setAttribute('inputmode',sysKb?'text':'none'); kbd.blur(); renderKeypad(); }
+    else if(k==='@undo') undo();
+    else if(k[0]==='@'){
+      const key=k.slice(1), move=key.startsWith('Arrow');
+      onKey({key,code:'',ctrlKey:false,metaKey:false,altKey:false,shiftKey:selMode&&move,isComposing:false,preventDefault(){}});
+    }
+    else act(()=>{ typeChar(k); });
+    focusEd();
+  });
+}
+/* share the equation image to other apps (WhatsApp, Word for phones, Photos…) */
+function initShare(){
+  if(!ALONE || !navigator.canShare) return;
+  try{ if(!navigator.canShare({files:[new File([new Uint8Array(1)],'x.png',{type:'image/png'})]})) return; }catch(e){ return; }
+  $('btnShare').hidden=false;
+  $('btnShare').addEventListener('click',async()=>{
+    const lines=targetLines();
+    if(!linesHaveContent(lines)){ setStatus('اكتب معادلة أولًا.'); return; }
+    try{
+      const res=4; const code=await encodeLines(lines); const bytes=await pngBytes(exportCanvas(res,lines),96*res,code);
+      await navigator.share({files:[new File([bytes],'معادلة.png',{type:'image/png'})]});
+      setStatus('أُرسلت الصورة إلى التطبيق الذي اخترته.',true);
+    }catch(e){ if(!(e&&e.name==='AbortError')) setStatus('تعذّرت المشاركة. جرّب «تنزيل PNG».'); }
+  });
+}
+
+/* ---------------- worksheet mode: A4 pages, header, border, numbering, PDF and Word export ---------------- */
+const WS_KEY='arabic-ws';
+let ws=null, wsPages=[], wsTimer=0;
+const wsNew=()=>({school:'',subject:'الرياضيات',grade:'',title:'ورقة عمل',date:'',name:true,border:true,pnum:true,qnum:true,items:[{type:'q',text:'',eq:null,lines:3}]});
+const numTxt=n=>state.nums==='ar'?String(n).replace(/[0-9]/g,d=>AR_DIG[d]):String(n);
+const attr=v=>esc(String(v==null?'':v)).replace(/"/g,'&quot;');
+const ABJAD=['أ','ب','جـ','د','هـ','و','ز','ح','ط','ي','ك','ل','م','ن','س','ع','ف','ص','ق','ر','ش','ت'];
+const wsStyle=()=>ws.qstyle||(ws.qnum===false?'none':'num');
+function wsLabel(n){ const st=wsStyle(); return st==='num'?numTxt(n):st==='abj'?ABJAD[(n-1)%ABJAD.length]:''; }
+function wsSubLabel(n){ return wsStyle()==='abj'?numTxt(n):ABJAD[(n-1)%ABJAD.length]; }   // branches use the other style
+function wsSave(){ store(WS_KEY,JSON.stringify(ws)); }
+function wsStatus(msg,ok){ const e=$('wsStatus'); e.textContent=msg; e.className='status'+(ok?' ok':''); }
+
+function wsBuildForm(){
+  const H=[['school','المدرسة'],['subject','المادة'],['grade','الصف'],['title','عنوان الورقة'],['date','التاريخ']];
+  const C=[['name','خانة اسم الطالب'],['border','حد للصفحة'],['pnum','ترقيم الصفحات']];
+  const QS=[['num','أرقام: ١ ، ٢ ، ٣'],['abj','حروف: أ ، ب ، جـ'],['none','بدون ترقيم']];
+  let qn=0, sn=0;
+  $('wsForm').innerHTML=`<div class="panel ws-card"><h3>الترويسة والصفحة</h3><div class="ws-grid">`+
+    H.map(f=>`<label class="fld" for="ws-${f[0]}"><span>${f[1]}</span><input id="ws-${f[0]}" data-f="${f[0]}" type="text" value="${attr(ws[f[0]])}" autocomplete="off"></label>`).join('')+`<label class="fld" for="ws-qstyle"><span>ترقيم الأسئلة</span><select id="ws-qstyle" data-f="qstyle">${QS.map(o=>`<option value="${o[0]}"${o[0]===wsStyle()?' selected':''}>${o[1]}</option>`).join('')}</select></label></div><div class="ws-checks">`+
+    C.map(f=>`<label for="ws-${f[0]}"><input id="ws-${f[0]}" data-f="${f[0]}" type="checkbox"${ws[f[0]]?' checked':''}> ${f[1]}</label>`).join('')+`</div></div>`+
+    ws.items.map((it,i)=>{
+      if(it.type==='q') sn=0;
+      const name=it.type==='q'?'سؤال '+(wsLabel(++qn)||numTxt(qn)):it.type==='sub'?'فرع '+wsSubLabel(++sn):it.type==='text'?'نص أو تعليمات':'فاصل صفحة';
+      const head=`<div class="ws-item-h"><b>${name}</b><span class="spacer"></span><button type="button" class="btn sm" data-a="up" title="تحريك لأعلى">↑</button><button type="button" class="btn sm" data-a="down" title="تحريك لأسفل">↓</button><button type="button" class="btn sm" data-a="del">حذف</button></div>`;
+      if(it.type==='break') return `<div class="panel ws-card ws-item" data-i="${i}">${head}</div>`;
+      return `<div class="panel ws-card ws-item${it.type==='sub'?' sub':''}" data-i="${i}">${head}
+        <textarea id="ws-t${i}" data-k="text" rows="2" placeholder="${it.type==='q'?'نص السؤال':it.type==='sub'?'نص الفرع':'النص'}" aria-label="${name}">${esc(it.text||'')}</textarea>
+        ${it.eq?`<div class="ws-att">${thumb(it.eq)}</div>`:''}
+        <div class="ws-item-b"><button type="button" class="btn sm" data-a="attach">${it.eq?'استبدل بما في المحرر':'أرفق ما في المحرر'}</button>
+        ${it.eq?'<button type="button" class="btn sm" data-a="open">افتحه في المحرر</button><button type="button" class="btn sm" data-a="detach">إزالة المرفق</button>':''}
+        ${it.type!=='text'?`<label class="ws-lines" for="ws-l${i}">سطور الإجابة <input id="ws-l${i}" data-k="lines" type="number" min="0" max="30" value="${it.lines|0}"></label>`:''}</div></div>`;
+    }).join('')+
+    `<div class="ws-add"><button type="button" class="btn" data-add="q">+ سؤال</button><button type="button" class="btn" data-add="sub">+ فرع</button><button type="button" class="btn" data-add="text">+ نص أو تعليمات</button><button type="button" class="btn" data-add="break">+ فاصل صفحة</button></div>`;
+  if(lastL) link();
+}
+function wsEq(eq){
+  const keep=stNow(); Object.assign(state,{lnum:'none'},eq.st||{}); let r=null;
+  try{
+    const lines=JSON.parse(eq.j).lines, L=layLines(lines); let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+    L.lines.forEach(l=>{ if(l.w<=0) return; x0=Math.min(x0,l.x); x1=Math.max(x1,l.x+l.w); y0=Math.min(y0,l.y-l.a); y1=Math.max(y1,l.y+l.d); });
+    (L.labs||[]).forEach(q=>{ x0=Math.min(x0,q.x); x1=Math.max(x1,q.x+q.w); });
+    if(x1>x0) r={prims:L.prims.filter(p=>p.t!=='ph'),x0,y0,w:x1-x0,h:y1-y0,lines,code:encodeLines(lines)};
+  }catch(e){}
+  Object.assign(state,keep); if(lastL) link(); return r;
+}
+const WSP={K:2,PW:794,PH:1123,M:58,EQ:0.5,BODY:18,LH:30,GAP:16,ANS:32};
+const wsFont=(sz,b)=>`${b?'700 ':''}${sz}px Amiri, "Times New Roman", serif`;
+async function wsRender(){
+  try{ await Promise.all([document.fonts.load(wsFont(22,true),'س'),document.fonts.load(wsFont(18),'س')]); }catch(e){}
+  const P=WSP, cw=P.PW-2*P.M, xr=P.PW-P.M, xl=P.M, bottom=P.PH-P.M-(ws.pnum?16:0);
+  const mc=document.createElement('canvas').getContext('2d');
+  const wrap=(text,font,width)=>{ mc.font=font; try{ mc.direction='rtl'; }catch(e){} const out=[];
+    String(text||'').split('\n').forEach(par=>{ let line=''; par.split(/\s+/).filter(Boolean).forEach(w=>{ const t=line?line+' '+w:w; if(line&&mc.measureText(t).width>width){ out.push(line); line=w; } else line=t; }); out.push(line); });
+    while(out.length&&!out[out.length-1]) out.pop(); return out; };
+  const txt=(ctx,str,x,y,font,align)=>{ ctx.font=font; try{ ctx.direction='rtl'; }catch(e){} ctx.textAlign=align; ctx.textBaseline='alphabetic'; ctx.fillStyle='#000'; ctx.fillText(str,x,y); };
+  const blocks=[];
+  { // header
+    const rows=[]; const f=wsFont(P.BODY);
+    const r1=[ws.school?'المدرسة: '+ws.school:'','التاريخ: '+(ws.date||'      /      /          ')];
+    const r2=[ws.subject?'المادة: '+ws.subject:'',ws.grade?'الصف: '+ws.grade:''];
+    if(r1[0]||r1[1]) rows.push(r1); if(r2[0]||r2[1]) rows.push(r2);
+    const th=ws.title?44:0, nh=ws.name?P.LH+6:0, h=rows.length*P.LH+th+nh+14;
+    blocks.push({h,draw(ctx,y){ let yy=y;
+      rows.forEach(r=>{ yy+=P.LH; txt(ctx,r[0],xr,yy-8,f,'right'); txt(ctx,r[1],xl,yy-8,f,'left'); });
+      if(ws.title){ yy+=th; txt(ctx,ws.title,P.PW/2,yy-12,wsFont(25,true),'center'); }
+      if(ws.name){ yy+=nh; txt(ctx,'الاسم: ..........................................................',xr,yy-8,f,'right'); txt(ctx,'الشعبة: ................',xl,yy-8,f,'left'); }
+      ctx.lineWidth=1.4; ctx.strokeStyle='#000'; ctx.beginPath(); ctx.moveTo(xl,yy+6); ctx.lineTo(xr,yy+6); ctx.stroke(); }});
+  }
+  let qn=0, sn=0;
+  for(const it of ws.items){
+    if(it.type==='break'){ blocks.push({brk:true}); continue; }
+    const sub=it.type==='sub', isQ=it.type==='q'||sub; if(it.type==='q') sn=0;
+    const lb=sub?wsSubLabel(++sn):it.type==='q'?wsLabel(++qn):'', label=lb?lb+(sub?')':' -'):'', off=sub?36:0, ind=(label?38:0)+off;
+    const lines=wrap(it.text,wsFont(P.BODY),cw-ind), eq=it.eq?wsEq(it.eq):null;
+    const sc=eq?Math.min(P.EQ,(cw-ind)/eq.w):0, eh=eq?eq.h*sc+10:0, nl=isQ?Math.max(0,Math.min(30,it.lines|0)):0;
+    const th=Math.max(lines.length,label?1:0)*P.LH, h=th+eh+nl*P.ANS+(nl?6:0);
+    if(!h) continue;
+    blocks.push({h,draw(ctx,y){
+      if(label) txt(ctx,label,xr-off,y+P.LH-8,wsFont(P.BODY,true),'right');
+      lines.forEach((l,i)=>txt(ctx,l,xr-ind,y+(i+1)*P.LH-8,wsFont(P.BODY),'right'));
+      let yy=y+th;
+      if(eq){ ctx.save(); ctx.translate(xr-ind-eq.w*sc,yy+4); ctx.scale(sc,sc); ctx.translate(-eq.x0,-eq.y0); drawCanvas(ctx,eq.prims); ctx.restore(); yy+=eh; }
+      if(nl){ ctx.save(); ctx.strokeStyle='#000'; ctx.lineWidth=1; ctx.setLineDash([1.5,4]); for(let j=1;j<=nl;j++){ ctx.beginPath(); ctx.moveTo(xl,yy+j*P.ANS); ctx.lineTo(xr-ind,yy+j*P.ANS); ctx.stroke(); } ctx.restore(); }
+    }});
+  }
+  // paginate
+  const pages=[[]]; let y=P.M;
+  blocks.forEach(b=>{
+    if(b.brk){ if(pages[pages.length-1].length){ pages.push([]); y=P.M; } return; }
+    if(y+b.h>bottom&&pages[pages.length-1].length){ pages.push([]); y=P.M; }
+    pages[pages.length-1].push({b,y}); y+=b.h+P.GAP;
+  });
+  wsPages=pages.map((pg,pi)=>{
+    const cv=document.createElement('canvas'); cv.width=P.PW*P.K; cv.height=P.PH*P.K;
+    const ctx=cv.getContext('2d'); ctx.scale(P.K,P.K); ctx.fillStyle='#fff'; ctx.fillRect(0,0,P.PW,P.PH);
+    if(ws.border){ ctx.strokeStyle='#000'; ctx.lineWidth=1.6; ctx.strokeRect(30,30,P.PW-60,P.PH-60); }
+    pg.forEach(o=>o.b.draw(ctx,o.y));
+    if(ws.pnum) txt(ctx,'- '+numTxt(pi+1)+' -',P.PW/2,P.PH-P.M+12,wsFont(15),'center');
+    return cv;
+  });
+  const prev=$('wsPrev'); prev.innerHTML=''; wsPages.forEach(cv=>prev.appendChild(cv));
+}
+function wsRefresh(now){ wsSave(); clearTimeout(wsTimer); if(now) wsRender(); else wsTimer=setTimeout(wsRender,250); }
+function openWs(){
+  if(!ws){ try{ ws=JSON.parse(load(WS_KEY)||'null'); }catch(e){ ws=null; } if(!ws||!Array.isArray(ws.items)) ws=wsNew(); }
+  $('ws').hidden=false; closeMenu(); wsBuildForm(); wsRender(); wsStatus('');
+}
+function closeWs(){ $('ws').hidden=true; render(); focusEd(); }
+$('wsForm').addEventListener('input',e=>{
+  const t=e.target, card=t.closest('.ws-item');
+  if(t.dataset.f){ ws[t.dataset.f]=t.type==='checkbox'?t.checked:t.value; if(t.dataset.f==='qstyle'){ wsBuildForm(); } }
+  else if(card&&t.dataset.k){ const it=ws.items[+card.dataset.i]; it[t.dataset.k]=t.dataset.k==='lines'?Math.max(0,Math.min(30,parseInt(t.value,10)||0)):t.value; }
+  wsRefresh(false);
+});
+$('wsForm').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.add){ const ty=b.dataset.add; ws.items.push(ty==='q'?{type:'q',text:'',eq:null,lines:3}:ty==='sub'?{type:'sub',text:'',eq:null,lines:2}:ty==='text'?{type:'text',text:'',eq:null}:{type:'break'}); wsBuildForm(); wsRefresh(true);
+    const last=$('wsForm').querySelector('.ws-item:last-of-type textarea'); if(last) last.focus(); return; }
+  const card=b.closest('.ws-item'); if(!card) return; const i=+card.dataset.i, it=ws.items[i], a=b.dataset.a;
+  if(a==='del') ws.items.splice(i,1);
+  else if(a==='up'&&i>0) ws.items.splice(i-1,0,ws.items.splice(i,1)[0]);
+  else if(a==='down'&&i<ws.items.length-1) ws.items.splice(i+1,0,ws.items.splice(i,1)[0]);
+  else if(a==='attach'){ if(!hasContent()){ wsStatus('المحرر فارغ. ارجع إلى المحرر واكتب المعادلة أو أدرج الرسم، ثم عد وأرفقه.'); return; }
+    it.eq={j:ser(doc),st:stNow()}; wsStatus('أُرفق ما في المحرر بهذا البند.',true); }
+  else if(a==='detach') it.eq=null;
+  else if(a==='open'){ const x=it.eq; act(()=>{ doc=JSON.parse(x.j); Object.assign(state,x.st); link(); const l=doc.lines[doc.lines.length-1]; cur={row:l,i:l.items.length}; }); syncAll(); renderPal(); closeWs();
+    setStatus('فُتح المرفق في المحرر. بعد التعديل افتح ورقة العمل واضغط «استبدل بما في المحرر» في البند نفسه.',true); return; }
+  wsBuildForm(); wsRefresh(true);
+});
+$('wsClose').addEventListener('click',closeWs);
+$('wsReset').addEventListener('click',()=>{ ws=wsNew(); wsBuildForm(); wsRefresh(true); wsStatus('بدأت ورقة جديدة.',true); });
+$('btnWs').addEventListener('click',openWs);
+
+/* ---- PDF: each page is embedded as a JPEG image ---- */
+async function wsPdfBytes(){
+  const enc=new TextEncoder(), parts=[], offs=[]; let len=0;
+  const push=x=>{ const u=typeof x==='string'?enc.encode(x):x; parts.push(u); len+=u.length; };
+  const n=wsPages.length, W=595.28, H=841.89;
+  push('%PDF-1.4\n');
+  const obj=(id,head,stream)=>{ offs[id]=len; push(`${id} 0 obj\n${head}\n`); if(stream){ push('stream\n'); push(stream); push('\nendstream\n'); } push('endobj\n'); };
+  obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2,`<< /Type /Pages /Count ${n} /Kids [${wsPages.map((_,i)=>`${3+3*i} 0 R`).join(' ')}] >>`);
+  for(let i=0;i<n;i++){
+    const cv=wsPages[i], blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',0.93)), jpg=new Uint8Array(await blob.arrayBuffer());
+    const content=enc.encode(`q ${W} 0 0 ${H} 0 0 cm /Im0 Do Q`);
+    obj(3+3*i,`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /XObject << /Im0 ${5+3*i} 0 R >> >> /Contents ${4+3*i} 0 R >>`);
+    obj(4+3*i,`<< /Length ${content.length} >>`,content);
+    obj(5+3*i,`<< /Type /XObject /Subtype /Image /Width ${cv.width} /Height ${cv.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>`,jpg);
+  }
+  const total=3+3*n, xref=len;
+  push(`xref\n0 ${total}\n0000000000 65535 f \n`);
+  for(let id=1;id<total;id++) push(String(offs[id]).padStart(10,'0')+' 00000 n \n');
+  push(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  const out=new Uint8Array(len); let o=0; parts.forEach(u=>{ out.set(u,o); o+=u.length; }); return out;
+}
+/* ---- Word: real text, equations as pictures that the Windows add-in can reopen ---- */
+function zipStore(files){
+  const enc=new TextEncoder(), chunks=[], central=[]; let off=0;
+  files.forEach(f=>{
+    const name=enc.encode(f.name), data=typeof f.data==='string'?enc.encode(f.data):f.data, crc=crc32(data);
+    const h=new Uint8Array(30+name.length), v=new DataView(h.buffer);
+    v.setUint32(0,0x04034b50,true); v.setUint16(4,20,true); v.setUint16(6,0x0800,true); v.setUint16(8,0,true); v.setUint16(10,0,true); v.setUint16(12,0x21,true);
+    v.setUint32(14,crc,true); v.setUint32(18,data.length,true); v.setUint32(22,data.length,true); v.setUint16(26,name.length,true); h.set(name,30);
+    const c=new Uint8Array(46+name.length), w=new DataView(c.buffer);
+    w.setUint32(0,0x02014b50,true); w.setUint16(4,20,true); w.setUint16(6,20,true); w.setUint16(8,0x0800,true); w.setUint16(14,0x21,true);
+    w.setUint32(16,crc,true); w.setUint32(20,data.length,true); w.setUint32(24,data.length,true); w.setUint16(28,name.length,true); w.setUint32(42,off,true); c.set(name,46);
+    chunks.push(h,data); central.push(c); off+=h.length+data.length;
+  });
+  const csize=central.reduce((a,c)=>a+c.length,0), e=new Uint8Array(22), v=new DataView(e.buffer);
+  v.setUint32(0,0x06054b50,true); v.setUint16(8,files.length,true); v.setUint16(10,files.length,true); v.setUint32(12,csize,true); v.setUint32(16,off,true);
+  return new Blob([...chunks,...central,e]);
+}
+async function wsDocxBlob(){
+  const X=t=>String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const FONT='Traditional Arabic';
+  const rpr=(sz,b)=>`<w:rPr><w:rFonts w:ascii="${FONT}" w:hAnsi="${FONT}" w:cs="${FONT}"/>${b?'<w:b/><w:bCs/>':''}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/><w:rtl/></w:rPr>`;
+  const run=(t,sz,b)=>`<w:r>${rpr(sz||32,b)}<w:t xml:space="preserve">${X(t)}</w:t></w:r>`;
+  const para=(inner,jc,after,before)=>`<w:p><w:pPr>${before||''}<w:bidi/>${after||''}${jc?`<w:jc w:val="${jc}"/>`:''}</w:pPr>${inner}</w:p>`;   // pBdr goes before bidi, spacing and ind after it
+  const cell=(t,jc)=>`<w:tc><w:tcPr><w:tcW w:w="2500" w:type="pct"/></w:tcPr>${para(run(t),jc)}</w:tc>`;
+  const row=(a,b)=>`<w:tr>${cell(a)}${cell(b,'right')}</w:tr>`;
+  const media=[]; let body='', qn=0, sn=0;
+  const rows=[]; const r1=[ws.school?'المدرسة: '+ws.school:'','التاريخ: '+(ws.date||'      /      /          ')], r2=[ws.subject?'المادة: '+ws.subject:'',ws.grade?'الصف: '+ws.grade:''];
+  rows.push(row(r1[0],r1[1])); if(r2[0]||r2[1]) rows.push(row(r2[0],r2[1]));
+  body+=`<w:tbl><w:tblPr><w:bidiVisual/><w:tblW w:w="5000" w:type="pct"/></w:tblPr><w:tblGrid><w:gridCol w:w="4819"/><w:gridCol w:w="4819"/></w:tblGrid>${rows.join('')}</w:tbl>`;
+  if(ws.title) body+=para(run(ws.title,44,true),'center');
+  if(ws.name) body+=`<w:tbl><w:tblPr><w:bidiVisual/><w:tblW w:w="5000" w:type="pct"/></w:tblPr><w:tblGrid><w:gridCol w:w="4819"/><w:gridCol w:w="4819"/></w:tblGrid>${row('الاسم: ................................................','الشعبة: ................')}</w:tbl>`;
+  body+=para('','','','<w:pBdr><w:bottom w:val="single" w:sz="12" w:space="1" w:color="000000"/></w:pBdr>');
+  for(const it of ws.items){
+    if(it.type==='break'){ body+='<w:p><w:r><w:br w:type="page"/></w:r></w:p>'; continue; }
+    const sub=it.type==='sub', isQ=it.type==='q'||sub; if(it.type==='q') sn=0;
+    const lb=sub?wsSubLabel(++sn):it.type==='q'?wsLabel(++qn):'', label=lb?lb+(sub?') ':' - '):'', indX=sub?'<w:ind w:left="567"/>':'';
+    const tl=String(it.text||'').split('\n'); if(label||tl.join('').trim()) tl.forEach((l,i)=>{ body+=para((i===0&&label?run(label,32,true):'')+run(l),'',indX); });
+    const eq=it.eq?wsEq(it.eq):null;
+    if(eq){
+      const sc=Math.min(0.55,620/eq.w), R=3, cv=document.createElement('canvas'); cv.width=Math.ceil(eq.w*sc*R); cv.height=Math.ceil(eq.h*sc*R);
+      const ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height); ctx.scale(sc*R,sc*R); ctx.translate(-eq.x0,-eq.y0); drawCanvas(ctx,eq.prims);
+      const code=await eq.code, n=media.length+1; media.push(await pngBytes(cv,96*R,code));
+      const cx=Math.round(eq.w*sc*9525), cy=Math.round(eq.h*sc*9525);
+      body+=para(`<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${cx}" cy="${cy}"/><wp:docPr id="${n}" name="eq${n}" descr="ARABIC-EQ:${code}"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="${n}" name="eq${n}.png"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="rIdImg${n}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>`,'',indX);
+    }
+    const nl=isQ?Math.max(0,Math.min(30,it.lines|0)):0, bd='<w:pBdr><w:bottom w:val="dotted" w:sz="6" w:space="1" w:color="000000"/><w:between w:val="dotted" w:sz="6" w:space="1" w:color="000000"/></w:pBdr>', sp='<w:spacing w:before="0" w:after="0" w:line="460" w:lineRule="exact"/>';
+    for(let j=0;j<nl;j++) body+=para('','',sp+indX,bd);
+    body+=para('');
+  }
+  const side=s=>`<w:${s} w:val="single" w:sz="12" w:space="24" w:color="000000"/>`;
+  const sect=`<w:sectPr>${ws.pnum?'<w:footerReference w:type="default" r:id="rIdFoot"/>':''}<w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="567" w:footer="567" w:gutter="0"/>${ws.border?`<w:pgBorders w:offsetFrom="page">${side('top')}${side('left')}${side('bottom')}${side('right')}</w:pgBorders>`:''}<w:bidi/></w:sectPr>`;
+  const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"';
+  const HEAD='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n', REL='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+  const files=[
+    {name:'[Content_Types].xml',data:HEAD+`<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>${ws.pnum?'<Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>':''}</Types>`},
+    {name:'_rels/.rels',data:HEAD+`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${REL}/officeDocument" Target="word/document.xml"/></Relationships>`},
+    {name:'word/document.xml',data:HEAD+`<w:document ${NS}><w:body>${body}${sect}</w:body></w:document>`},
+    {name:'word/_rels/document.xml.rels',data:HEAD+`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${media.map((_,i)=>`<Relationship Id="rIdImg${i+1}" Type="${REL}/image" Target="media/image${i+1}.png"/>`).join('')}${ws.pnum?`<Relationship Id="rIdFoot" Type="${REL}/footer" Target="footer1.xml"/>`:''}</Relationships>`}
+  ];
+  if(ws.pnum) files.push({name:'word/footer1.xml',data:HEAD+`<w:ftr ${NS}><w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:fldChar w:fldCharType="begin"/></w:r><w:r><w:instrText xml:space="preserve"> PAGE </w:instrText></w:r><w:r><w:fldChar w:fldCharType="separate"/></w:r><w:r><w:t>1</w:t></w:r><w:r><w:fldChar w:fldCharType="end"/></w:r></w:p></w:ftr>`});
+  media.forEach((m,i)=>files.push({name:`word/media/image${i+1}.png`,data:m}));
+  return zipStore(files);
+}
+async function wsExport(kind){
+  if(!downloads){ wsStatus('التنزيل غير متاح في هذا العرض. افتح المحرر من صفحته في claude.ai.'); return; }
+  try{
+    clearTimeout(wsTimer); await wsRender();
+    const base=(ws.title||'ورقة عمل').replace(/[\\/:*?"<>|]/g,' ').trim()||'ورقة عمل';
+    const data=kind==='pdf'?new Blob([await wsPdfBytes()]):await wsDocxBlob();
+    await downloads.save({filename:base+(kind==='pdf'?'.pdf':'.docx'),data});
+    wsStatus(kind==='pdf'?'نُزّل ملف PDF وهو جاهز للطباعة.':'نُزّل ملف Word. النص فيه قابل للتعديل، والمعادلات صور.',true);
+  }catch(e){ wsStatus(e&&e.code==='declined'?'أُلغي التنزيل.':'تعذّر التنزيل. حاول مرة أخرى.'); }
+}
+$('wsPdf').addEventListener('click',()=>wsExport('pdf'));
+$('wsDocx').addEventListener('click',()=>wsExport('docx'));
+
+/* ---------------- Windows program: Word insert / update ---------------- */
+async function initDesk(){
+  const info=await DESK.info();
+  if(info.mode!=='word') return;
+  $('wordBar').hidden=false;
+  if(info.code){
+    try{ const x=await decodeCode(info.code); doc=x.d; Object.assign(state,x.st); link(); const l=doc.lines[doc.lines.length-1]; cur={row:l,i:l.items.length}; undoS=[]; redoS=[]; syncAll(); renderPal(); render(); }
+    catch(e){ setStatus('تعذّرت قراءة المعادلة القادمة من Word.'); }
+    $('wordTitle').textContent='تعديل معادلة في Word'; $('btnWordOk').textContent='تحديث في Word';
+  } else {
+    doc={lines:[R()]}; link(); cur={row:doc.lines[0],i:0}; undoS=[]; redoS=[]; render();
+  }
+  $('btnWordCancel').addEventListener('click',()=>DESK.cancel());
+  $('btnWordOk').addEventListener('click',async()=>{
+    if(!hasContent()){ setStatus('اكتب معادلة أولًا.'); return; }
+    sel=null; const lines=doc.lines.map(clone);
+    const code=await encodeLines(lines); const res=4; const cv=exportCanvas(res,lines);
+    const bytes=await pngBytes(cv,96*res,code);
+    await DESK.finish({png:bytes.buffer.slice(0),code,wPt:cv._g.wPt,hPt:cv._g.hPt,descPt:cv._g.descPt});
+  });
+  focusEd();
+}
+
+/* ---------------- start ---------------- */
+function example(){
+  const sq=N.sqrt(); sq.c[0]=R(C('ب'),Object.assign(N.sup(),{c:[R(C('2'))]}),C('−'),C('4'),C('أ'),C('جـ','var'));
+  const fr=N.frac(); fr.c[0]=R(C('−'),C('ب'),C('±'),sq); fr.c[1]=R(C('2'),C('أ'));
+  const line1=R(C('س'),C('='),fr);
+  const lim=N.lim('نها'); lim.c[0]=R(C('س'),C('→'),C('2'));
+  const f2_=N.frac(); f2_.c[0]=R(C('س'),Object.assign(N.sup(),{c:[R(C('2'))]}),C('−'),C('4')); f2_.c[1]=R(C('س'),C('−'),C('2'));
+  const line2=R(lim,f2_,C('='),C('4'));
+  return {lines:[line1,line2]};
+}
+(function init(){
+  let d=null; try{ d=JSON.parse(load('arabic-eq-draft')||'null'); }catch(e){}
+  if(d&&d.j){ try{ doc=JSON.parse(d.j); Object.assign(state,d.st||{}); }catch(e){ doc=example(); } } else doc=example();
+  if(!doc.lines||!doc.lines.length) doc={lines:[R()]};
+  link(); const l=doc.lines[doc.lines.length-1]; cur={row:l,i:l.items.length};
+  buildMenus(); syncAll(); renderTabs(); renderPal(); render(); renderSaved(); openFromHash();
+  if(DESK) initDesk();
+  initKeypad(); initShare();
+  if(ALONE && 'serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost')) navigator.serviceWorker.register('sw.js').catch(()=>{});
+  const fl=[`44px Amiri`,`italic 44px Amiri`,`44px "Noto Sans Math"`];
+  Promise.all(fl.map(f=>document.fonts.load(f,'سxy∑∫').catch(()=>{}))).then(()=>document.fonts.ready).then(()=>{ mcache.clear(); renderPal(); render(); renderSaved(); });
+})();
+})();
+</script>
+</body>
+</html>
